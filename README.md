@@ -5,67 +5,67 @@ Template **Laravel + Inertia/Vue 3** com Docker, Fortify, Spatie Permission, Hor
 ## Pré-requisitos
 
 - Docker e Docker Compose
-- Make (opcional, recomendado)
 - Node.js **20.19+** ou **22.12+** no host (apenas para build do frontend sem Vite)
 
 ## Setup inicial
 
 ```bash
 cp .env.example .env
-make setup
-make shell
+docker compose -f compose.dev.yaml up -d --build
+docker compose -f compose.dev.yaml exec workspace composer install
+docker compose -f compose.dev.yaml exec workspace npm ci
+docker compose -f compose.dev.yaml exec workspace php artisan key:generate --force
+docker compose -f compose.dev.yaml exec workspace php artisan migrate --force
+docker compose -f compose.dev.yaml exec workspace bash
 php artisan db:seed
 exit
 npm run build
 ```
 
-1. `make setup` — sobe containers, instala dependências PHP/Node no container, gera `APP_KEY` e roda migrations.
+1. Os comandos `docker compose` — sobem containers, instalam dependências PHP/Node no container, geram `APP_KEY` e rodam migrations.
 2. `db:seed` — cria perfis, permissões e usuário admin (rode **dentro** do container).
 3. `npm run build` — gera assets em `public/build/` (rode no **host**).
 
 App: [http://localhost:8080](http://localhost:8080)
 
-> **Importante:** com Docker, use `make shell` para Artisan, Composer e seeds. Comandos PHP no host falham (Redis/Postgres usam hostnames dos containers).
+> **Importante:** com Docker, use `docker compose -f compose.dev.yaml exec workspace bash` para Artisan, Composer e seeds. Comandos PHP no host falham (Redis/Postgres usam hostnames dos containers).
 
 ## Uso diário
 
 **Terminal 1 — stack**
 
 ```bash
-make up
+docker compose -f compose.dev.yaml up -d --build
 ```
 
 **Terminal 2 — hot reload (opcional, para editar Vue/CSS)**
 
 ```bash
-make vite
+docker compose -f compose.dev.yaml exec workspace npm run dev
 ```
 
-Sem `make vite`, após mudanças no frontend:
+Sem Vite em dev, após mudanças no frontend:
 
 ```bash
 npm run build
 ```
 
-## Comandos Make
+## Comandos Docker
+
+Arquivo: `compose.dev.yaml` · Projeto Compose: `laravue`
 
 | Comando | Descrição |
 |---------|-----------|
-| `make up` | Sobe/rebuilda containers em background |
-| `make down` | Para containers |
-| `make build` | Build das imagens Docker |
-| `make shell` | Bash no container `workspace` |
-| `make setup` | Setup completo (primeira vez) |
-| `make migrate` | Migrations |
-| `make test` | Testes Pest |
-| `make vite` | Vite dev server (porta 5173) |
-| `make build-assets` | Build via container *(pode falhar — prefira `npm run build` no host)* |
-| `make horizon-logs` | Logs do Horizon |
-| `make logs` | Logs de todos os serviços |
-
-## Docker
-
-Arquivo: `compose.dev.yaml` · Projeto Compose: `laravue`
+| `docker compose -f compose.dev.yaml up -d --build` | Sobe/rebuilda containers em background |
+| `docker compose -f compose.dev.yaml down` | Para containers |
+| `docker compose -f compose.dev.yaml build` | Build das imagens Docker |
+| `docker compose -f compose.dev.yaml exec workspace bash` | Bash no container `workspace` |
+| `docker compose -f compose.dev.yaml exec workspace php artisan migrate` | Migrations |
+| `docker compose -f compose.dev.yaml exec workspace php artisan test` | Testes Pest |
+| `docker compose -f compose.dev.yaml exec workspace npm run dev` | Vite dev server (porta 5173) |
+| `docker compose -f compose.dev.yaml up -d horizon` | Sobe o Horizon |
+| `docker compose -f compose.dev.yaml logs -f horizon` | Logs do Horizon |
+| `docker compose -f compose.dev.yaml logs -f` | Logs de todos os serviços |
 
 | Container | Função | Porta (host) |
 |-----------|--------|--------------|
@@ -81,10 +81,10 @@ Código montado em `/var/www` (volume do diretório do projeto).
 ### Rebuild completo (sem cache)
 
 ```bash
-make down
+docker compose -f compose.dev.yaml down
 docker compose -f compose.dev.yaml build --no-cache
 docker compose -f compose.dev.yaml up -d
-make shell
+docker compose -f compose.dev.yaml exec workspace bash
 composer install
 php artisan migrate --force --seed
 exit
@@ -94,9 +94,13 @@ npm run build
 ### Recriar banco do zero
 
 ```bash
-make down -v
-make setup
-make shell && php artisan db:seed && exit
+docker compose -f compose.dev.yaml down -v
+docker compose -f compose.dev.yaml up -d --build
+docker compose -f compose.dev.yaml exec workspace composer install
+docker compose -f compose.dev.yaml exec workspace npm ci
+docker compose -f compose.dev.yaml exec workspace php artisan key:generate --force
+docker compose -f compose.dev.yaml exec workspace php artisan migrate --force
+docker compose -f compose.dev.yaml exec workspace php artisan db:seed
 npm run build
 ```
 
@@ -106,7 +110,7 @@ Se `docker compose up` falhar com *container name already in use*:
 
 ```bash
 docker rm -f nginx php-fpm workspace postgres redis horizon
-make up
+docker compose -f compose.dev.yaml up -d --build
 ```
 
 ## Banco de dados
@@ -123,7 +127,7 @@ Host dentro dos containers: `postgres`. Redis: `redis`.
 
 | Modo | Comando | Hot reload |
 |------|---------|------------|
-| Desenvolvimento | `make vite` | Sim |
+| Desenvolvimento | `docker compose -f compose.dev.yaml exec workspace npm run dev` | Sim |
 | Estático | `npm run build` (host) | Não |
 
 Título e logo usam `APP_NAME` do `.env` (`VITE_APP_NAME="${APP_NAME}"`).
@@ -131,9 +135,9 @@ Título e logo usam `APP_NAME` do `.env` (`VITE_APP_NAME="${APP_NAME}"`).
 ## Testes
 
 ```bash
-make test
+docker compose -f compose.dev.yaml exec workspace php artisan test
 # ou filtrado:
-make shell
+docker compose -f compose.dev.yaml exec workspace bash
 php artisan test --compact --filter=NomeDoTeste
 ```
 
