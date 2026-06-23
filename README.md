@@ -65,6 +65,8 @@ Arquivo: `compose.dev.yaml` · Projeto Compose: `laravue`
 | `docker compose -f compose.dev.yaml exec workspace npm run dev` | Vite dev server (porta 5173) |
 | `docker compose -f compose.dev.yaml up -d horizon` | Sobe o Horizon |
 | `docker compose -f compose.dev.yaml logs -f horizon` | Logs do Horizon |
+| `docker compose -f compose.dev.yaml up -d scheduler` | Sobe o Scheduler |
+| `docker compose -f compose.dev.yaml logs -f scheduler` | Logs do Scheduler |
 | `docker compose -f compose.dev.yaml logs -f` | Logs de todos os serviços |
 
 | Container | Função | Porta (host) |
@@ -75,8 +77,11 @@ Arquivo: `compose.dev.yaml` · Projeto Compose: `laravue`
 | `postgres` | PostgreSQL | 5432 |
 | `redis` | Cache/filas | — |
 | `horizon` | Laravel Horizon | — |
+| `scheduler` | Laravel Scheduler (`schedule:work`) | — |
 
 Código montado em `/var/www` (volume do diretório do projeto).
+
+O container `scheduler` executa tarefas agendadas em [`routes/console.php`](routes/console.php), incluindo `horizon:snapshot` a cada 5 minutos. Sem ele, as métricas do dashboard `/horizon` permanecem vazias.
 
 ### Rebuild completo (sem cache)
 
@@ -109,7 +114,7 @@ npm run build
 Se `docker compose up` falhar com *container name already in use*:
 
 ```bash
-docker rm -f nginx php-fpm workspace postgres redis horizon
+docker rm -f nginx php-fpm workspace postgres redis horizon scheduler
 docker compose -f compose.dev.yaml up -d --build
 ```
 

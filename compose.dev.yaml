@@ -121,6 +121,32 @@ services:
         condition: service_started
     restart: unless-stopped
 
+  scheduler:
+    container_name: scheduler
+    build:
+      context: .
+      dockerfile: ./docker/common/php-fpm/Dockerfile
+      target: development
+      args:
+        UID: ${UID:-1000}
+        GID: ${GID:-1000}
+        XDEBUG_ENABLED: "false"
+    entrypoint: []
+    command: php artisan schedule:work
+    env_file:
+      - .env
+    user: "${UID:-1000}:${GID:-1000}"
+    volumes:
+      - ./:/var/www
+    networks:
+      - laravel-development
+    depends_on:
+      redis:
+        condition: service_started
+      postgres:
+        condition: service_started
+    restart: unless-stopped
+
 networks:
   laravel-development:
 
