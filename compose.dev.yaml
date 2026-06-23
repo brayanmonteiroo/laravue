@@ -2,7 +2,7 @@ name: laravue
 
 services:
   nginx:
-    container_name: nginx
+    container_name: laravue-nginx
     image: nginx:latest
     volumes:
       - ./:/var/www
@@ -19,7 +19,7 @@ services:
     restart: unless-stopped
 
   php-fpm:
-    container_name: php-fpm
+    container_name: laravue-php-fpm
     build:
       context: .
       dockerfile: ./docker/common/php-fpm/Dockerfile
@@ -49,7 +49,7 @@ services:
         condition: service_started
 
   workspace:
-    container_name: workspace
+    container_name: laravue-workspace
     build:
       context: .
       dockerfile: ./docker/development/workspace/Dockerfile
@@ -76,7 +76,7 @@ services:
       - laravel-development
 
   postgres:
-    container_name: postgres
+    container_name: laravue-postgres
     image: postgres:18
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
@@ -90,13 +90,13 @@ services:
       - laravel-development
 
   redis:
-    container_name: redis
+    container_name: laravue-redis
     image: redis:alpine
     networks:
       - laravel-development
 
   horizon:
-    container_name: horizon
+    container_name: laravue-horizon
     build:
       context: .
       dockerfile: ./docker/common/php-fpm/Dockerfile
@@ -122,7 +122,7 @@ services:
     restart: unless-stopped
 
   scheduler:
-    container_name: scheduler
+    container_name: laravue-scheduler
     build:
       context: .
       dockerfile: ./docker/common/php-fpm/Dockerfile

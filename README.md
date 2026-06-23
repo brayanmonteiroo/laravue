@@ -71,13 +71,13 @@ Arquivo: `compose.dev.yaml` · Projeto Compose: `laravue`
 
 | Container | Função | Porta (host) |
 |-----------|--------|--------------|
-| `nginx` | HTTP | 8080 |
-| `php-fpm` | PHP-FPM | — |
-| `workspace` | CLI (Artisan, Composer, npm) | 5173 |
-| `postgres` | PostgreSQL | 5432 |
-| `redis` | Cache/filas | — |
-| `horizon` | Laravel Horizon | — |
-| `scheduler` | Laravel Scheduler (`schedule:work`) | — |
+| `laravue-nginx` | HTTP | 8080 |
+| `laravue-php-fpm` | PHP-FPM | — |
+| `laravue-workspace` | CLI (Artisan, Composer, npm) | 5173 |
+| `laravue-postgres` | PostgreSQL | 5432 |
+| `laravue-redis` | Cache/filas | — |
+| `laravue-horizon` | Laravel Horizon | — |
+| `laravue-scheduler` | Laravel Scheduler (`schedule:work`) | — |
 
 Código montado em `/var/www` (volume do diretório do projeto).
 
@@ -114,7 +114,7 @@ npm run build
 Se `docker compose up` falhar com *container name already in use*:
 
 ```bash
-docker rm -f nginx php-fpm workspace postgres redis horizon scheduler
+docker rm -f laravue-nginx laravue-php-fpm laravue-workspace laravue-postgres laravue-redis laravue-horizon laravue-scheduler
 docker compose -f compose.dev.yaml up -d --build
 ```
 
