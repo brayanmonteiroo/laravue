@@ -5,7 +5,6 @@ Template **Laravel + Inertia/Vue 3** com Docker, Fortify, Spatie Permission, Hor
 ## Pré-requisitos
 
 - Docker e Docker Compose
-- Node.js **20.19+** ou **22.12+** no host (apenas para build do frontend sem Vite)
 
 ## Setup inicial
 
@@ -19,16 +18,16 @@ docker compose -f compose.dev.yaml exec workspace php artisan migrate --force
 docker compose -f compose.dev.yaml exec workspace bash
 php artisan db:seed
 exit
-npm run build
+docker compose -f compose.dev.yaml exec workspace npm run build
 ```
 
 1. Os comandos `docker compose` — sobem containers, instalam dependências PHP/Node no container, geram `APP_KEY` e rodam migrations.
 2. `db:seed` — cria perfis, permissões e usuário admin (rode **dentro** do container).
-3. `npm run build` — gera assets em `public/build/` (rode no **host**).
+3. `npm run build` — gera assets em `public/build/` (também no container `workspace`).
 
 App: [http://localhost:8080](http://localhost:8080)
 
-> **Importante:** com Docker, use `docker compose -f compose.dev.yaml exec workspace bash` para Artisan, Composer e seeds. Comandos PHP no host falham (Redis/Postgres usam hostnames dos containers).
+> **Importante:** com Docker, use `docker compose -f compose.dev.yaml exec workspace bash` (ou `exec workspace …`) para Artisan, Composer, npm e seeds. Comandos PHP no host falham (Redis/Postgres usam hostnames dos containers).
 
 ## Uso diário
 
@@ -47,7 +46,7 @@ docker compose -f compose.dev.yaml exec workspace npm run dev
 Sem Vite em dev, após mudanças no frontend:
 
 ```bash
-npm run build
+docker compose -f compose.dev.yaml exec workspace npm run build
 ```
 
 ## Comandos Docker
@@ -63,6 +62,7 @@ Arquivo: `compose.dev.yaml` · Projeto Compose: `laravue`
 | `docker compose -f compose.dev.yaml exec workspace php artisan migrate` | Migrations |
 | `docker compose -f compose.dev.yaml exec workspace php artisan test` | Testes Pest |
 | `docker compose -f compose.dev.yaml exec workspace npm run dev` | Vite dev server (porta 5173) |
+| `docker compose -f compose.dev.yaml exec workspace npm run build` | Build dos assets em `public/build/` |
 | `docker compose -f compose.dev.yaml up -d horizon` | Sobe o Horizon |
 | `docker compose -f compose.dev.yaml logs -f horizon` | Logs do Horizon |
 | `docker compose -f compose.dev.yaml up -d scheduler` | Sobe o Scheduler |
@@ -93,7 +93,7 @@ docker compose -f compose.dev.yaml exec workspace bash
 composer install
 php artisan migrate --force --seed
 exit
-npm run build
+docker compose -f compose.dev.yaml exec workspace npm run build
 ```
 
 ### Recriar banco do zero
@@ -106,7 +106,7 @@ docker compose -f compose.dev.yaml exec workspace npm ci
 docker compose -f compose.dev.yaml exec workspace php artisan key:generate --force
 docker compose -f compose.dev.yaml exec workspace php artisan migrate --force
 docker compose -f compose.dev.yaml exec workspace php artisan db:seed
-npm run build
+docker compose -f compose.dev.yaml exec workspace npm run build
 ```
 
 ### Conflito de nome de container
@@ -133,7 +133,7 @@ Host dentro dos containers: `postgres`. Redis: `redis`.
 | Modo | Comando | Hot reload |
 |------|---------|------------|
 | Desenvolvimento | `docker compose -f compose.dev.yaml exec workspace npm run dev` | Sim |
-| Estático | `npm run build` (host) | Não |
+| Estático | `docker compose -f compose.dev.yaml exec workspace npm run build` | Não |
 
 Título e logo usam `APP_NAME` do `.env` (`VITE_APP_NAME="${APP_NAME}"`).
 
