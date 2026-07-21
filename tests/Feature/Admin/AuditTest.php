@@ -46,11 +46,61 @@ test('administrador visualiza as últimas auditorias traduzidas', function () {
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('admin/audits/Index')
-            ->has('audits')
-            ->where('audits.0.actor', fn ($value) => is_string($value))
-            ->where('audits.0.action', fn ($value) => is_string($value))
-            ->where('audits.0.subject', fn ($value) => is_string($value))
-            ->where('audits.0.details', fn ($value) => is_string($value))
+            ->has('audits.data')
+            ->where('audits.per_page', 10)
+            ->where('audits.data.0.actor', fn ($value) => is_string($value))
+            ->where('audits.data.0.action', fn ($value) => is_string($value))
+            ->where('audits.data.0.subject', fn ($value) => is_string($value))
+            ->where('audits.data.0.details', fn ($value) => is_string($value))
+        );
+});
+
+test('listagem de auditoria pagina de dez em dez', function () {
+    $admin = User::factory()->administrator()->create();
+    $actor = User::factory()->create();
+
+    foreach (range(1, 11) as $i) {
+        Audit::query()->create([
+            'user_type' => User::class,
+            'user_id' => $actor->id,
+            'event' => 'updated',
+            'auditable_type' => User::class,
+            'auditable_id' => $actor->id,
+            'old_values' => ['name' => "Antes {$i}"],
+            'new_values' => ['name' => "Depois {$i}"],
+            'url' => 'http://localhost/admin/users/'.$actor->id,
+            'ip_address' => '127.0.0.1',
+            'user_agent' => 'Pest',
+            'tags' => '',
+        ]);
+    }
+
+    $total = Audit::query()->count();
+    $secondPageCount = $total - 10;
+
+    expect($total)->toBeGreaterThan(10);
+    expect($secondPageCount)->toBeGreaterThan(0);
+
+    $this->actingAs($admin)
+        ->get(route('admin.audits.index', ['page' => 1]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('admin/audits/Index')
+            ->where('audits.current_page', 1)
+            ->where('audits.per_page', 10)
+            ->where('audits.total', $total)
+            ->has('audits.data', 10)
+        );
+
+    $this->actingAs($admin)
+        ->get(route('admin.audits.index', ['page' => 2]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('admin/audits/Index')
+            ->where('audits.current_page', 2)
+            ->where('audits.per_page', 10)
+            ->where('audits.total', $total)
+            ->has('audits.data', $secondPageCount)
         );
 });
 

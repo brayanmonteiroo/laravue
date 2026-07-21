@@ -12,10 +12,10 @@ use OwenIt\Auditing\Models\Audit;
 
 class AuditController extends Controller
 {
-    private const int LIMIT = 10;
+    private const int PER_PAGE = 10;
 
     /**
-     * Lista as últimas auditorias do sistema.
+     * Lista as auditorias do sistema (mais recentes primeiro).
      */
     public function index(AuditPresenter $presenter): Response
     {
@@ -24,11 +24,9 @@ class AuditController extends Controller
         $audits = Audit::query()
             ->with('user:id,name')
             ->latest('id')
-            ->limit(self::LIMIT)
-            ->get()
-            ->map(fn (Audit $audit): array => $presenter->present($audit))
-            ->values()
-            ->all();
+            ->paginate(self::PER_PAGE)
+            ->withQueryString()
+            ->through(fn (Audit $audit): array => $presenter->present($audit));
 
         return Inertia::render('admin/audits/Index', [
             'audits' => $audits,

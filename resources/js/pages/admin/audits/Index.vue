@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
 import Heading from '@/components/Heading.vue';
+import DataTable from '@/components/tables/DataTable.vue';
 import { dashboard } from '@/routes/admin';
 import { index as auditsIndex } from '@/routes/admin/audits';
+import type { DataTableColumn, LaravelPaginator } from '@/types/tables';
 
 type AuditRow = {
     id: number;
@@ -14,7 +16,7 @@ type AuditRow = {
 };
 
 type Props = {
-    audits: AuditRow[];
+    audits: LaravelPaginator<AuditRow>;
 };
 
 defineProps<Props>();
@@ -28,8 +30,21 @@ defineOptions({
     },
 });
 
+const tableColumns: DataTableColumn[] = [
+    { key: 'occurred_at', label: 'Quando' },
+    { key: 'actor', label: 'Quem' },
+    { key: 'action', label: 'Ação' },
+    { key: 'subject', label: 'Registro' },
+    {
+        key: 'details',
+        label: 'Detalhes',
+        headerClass: 'hidden lg:table-cell',
+        cellClass: 'hidden lg:table-cell',
+    },
+];
+
 function formatDateTime(iso: string | null): string {
-    if (! iso) {
+    if (!iso) {
         return '—';
     }
 
@@ -38,74 +53,53 @@ function formatDateTime(iso: string | null): string {
         timeStyle: 'short',
     }).format(new Date(iso));
 }
+
+function rowAsAudit(row: Record<string, unknown>): AuditRow {
+    return row as unknown as AuditRow;
+}
 </script>
 
 <template>
     <Head title="Auditoria" />
 
-    <div class="w-full space-y-8">
+    <div class="space-y-6">
         <Heading
             title="Auditoria"
-            description="Últimas 10 alterações registradas no sistema — usuários, perfis e permissões."
+            description="Histórico de alterações no sistema — usuários, perfis e permissões (10 por página)."
         />
 
-        <div
-            class="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border"
+        <DataTable
+            :columns="tableColumns"
+            :paginator="audits"
+            sort-column="id"
+            sort-direction="desc"
+            :index-url="auditsIndex.url()"
         >
-            <table class="w-full text-sm">
-                <thead class="border-b border-sidebar-border/70 bg-muted/40 dark:border-sidebar-border">
-                    <tr>
-                        <th class="px-4 py-3 text-left font-medium">
-                            Quando
-                        </th>
-                        <th class="px-4 py-3 text-left font-medium">
-                            Quem
-                        </th>
-                        <th class="px-4 py-3 text-left font-medium">
-                            Ação
-                        </th>
-                        <th class="px-4 py-3 text-left font-medium">
-                            Registro
-                        </th>
-                        <th class="hidden px-4 py-3 text-left font-medium lg:table-cell">
-                            Detalhes
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr
-                        v-if="audits.length === 0"
+            <template #default="{ rows }">
+                <tr
+                    v-for="row in rows"
+                    :key="rowAsAudit(row).id"
+                    class="border-b border-sidebar-border/50 last:border-0 dark:border-sidebar-border/50"
+                >
+                    <td class="px-4 py-3 align-top whitespace-nowrap">
+                        {{ formatDateTime(rowAsAudit(row).occurred_at) }}
+                    </td>
+                    <td class="px-4 py-3 align-top">
+                        {{ rowAsAudit(row).actor }}
+                    </td>
+                    <td class="px-4 py-3 align-top">
+                        {{ rowAsAudit(row).action }}
+                    </td>
+                    <td class="px-4 py-3 align-top">
+                        {{ rowAsAudit(row).subject }}
+                    </td>
+                    <td
+                        class="hidden px-4 py-3 align-top text-muted-foreground lg:table-cell"
                     >
-                        <td
-                            colspan="5"
-                            class="px-4 py-8 text-center text-muted-foreground"
-                        >
-                            Nenhuma auditoria registrada ainda.
-                        </td>
-                    </tr>
-                    <tr
-                        v-for="audit in audits"
-                        :key="audit.id"
-                        class="border-b border-sidebar-border/70 last:border-b-0 dark:border-sidebar-border"
-                    >
-                        <td class="px-4 py-3 align-top whitespace-nowrap">
-                            {{ formatDateTime(audit.occurred_at) }}
-                        </td>
-                        <td class="px-4 py-3 align-top">
-                            {{ audit.actor }}
-                        </td>
-                        <td class="px-4 py-3 align-top">
-                            {{ audit.action }}
-                        </td>
-                        <td class="px-4 py-3 align-top">
-                            {{ audit.subject }}
-                        </td>
-                        <td class="hidden px-4 py-3 align-top text-muted-foreground lg:table-cell">
-                            {{ audit.details }}
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+                        {{ rowAsAudit(row).details }}
+                    </td>
+                </tr>
+            </template>
+        </DataTable>
     </div>
 </template>
