@@ -1,11 +1,12 @@
 <?php
 
-use App\Http\Controllers\Admin\AuditController;
-use App\Http\Controllers\Admin\DashboardController;
-use App\Http\Controllers\Admin\RoleController;
-use App\Http\Controllers\Admin\RolePermissionController;
-use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\Audit\AuditController;
+use App\Http\Controllers\Admin\Dashboard\DashboardController;
+use App\Http\Controllers\Admin\Role\RoleController;
+use App\Http\Controllers\Admin\RolePermission\RolePermissionController;
+use App\Http\Controllers\Admin\User\UserController;
 use Database\Seeders\RolePermissionSeeder;
+use Illuminate\Foundation\Http\Middleware\ValidateCsrfToken;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -81,5 +82,14 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
 |
 | Garante middleware web (sessão/auth) em URLs inexistentes.
 | Sem isso, páginas de erro 404 não veem o usuário logado.
+|
+| any() + fallback(): POST/PUT em rotas inexistentes também retornam 404
+| (Route::fallback() só registra GET e gerava 405).
+| withoutMiddleware CSRF: senão POST sem token vira 419 antes do abort(404).
 */
-Route::fallback(fn () => abort(404));
+Route::any('{fallbackPlaceholder}', fn () => abort(404))
+    ->where('fallbackPlaceholder', '.*')
+    ->fallback()
+    ->withoutMiddleware([
+        ValidateCsrfToken::class,
+    ]);

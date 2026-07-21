@@ -2,7 +2,7 @@
 import { Head, Link, router } from '@inertiajs/vue3';
 import { Eye, Pencil, Trash2, UserPlus } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
-import UserController from '@/actions/App/Http/Controllers/Admin/UserController';
+import UserController from '@/actions/App/Http/Controllers/Admin/User/UserController';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import Heading from '@/components/Heading.vue';
 import DataTable from '@/components/tables/DataTable.vue';

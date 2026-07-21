@@ -86,6 +86,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secret}
     volumes:
       - postgres-data:/var/lib/postgresql
+      - ./docker/development/postgres/init-testing-database.sql:/docker-entrypoint-initdb.d/01-init-testing-database.sql:ro
     networks:
       - laravel-development
 

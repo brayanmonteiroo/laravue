@@ -17,6 +17,22 @@ on:
 jobs:
   ci:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_DB: laravue_testing
+          POSTGRES_USER: laravel
+          POSTGRES_PASSWORD: secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U laravel -d laravue_testing"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+
     strategy:
       matrix:
         php-version: ['8.4', '8.5']
@@ -29,6 +45,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-version }}
+          extensions: pdo_pgsql, pgsql
           tools: composer:v2
           coverage: xdebug
 
@@ -43,14 +60,22 @@ jobs:
       - name: Install Dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
-      - name: Copy Environment File
-        run: cp .env.example .env
+      - name: Copy Environment Files
+        run: |
+          cp .env.example .env
+          cp .env.testing.example .env.testing
 
       - name: Generate Application Key
-        run: php artisan key:generate
+        run: php artisan key:generate --force
+
+      - name: Sync APP_KEY into .env.testing and point DB host to CI Postgres
+        run: |
+          KEY=$(grep -E '^APP_KEY=' .env | cut -d= -f2-)
+          sed -i "s|^APP_KEY=.*|APP_KEY=${KEY}|" .env.testing
+          sed -i 's|^DB_HOST=.*|DB_HOST=127.0.0.1|' .env.testing
 
       - name: Build Assets
         run: npm run build
 
       - name: Tests
-        run: ./vendor/bin/pest
+        run: ./vendor/bin/pest --compact

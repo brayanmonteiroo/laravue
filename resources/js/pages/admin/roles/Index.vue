@@ -2,7 +2,7 @@
 import { Form, Head, Link, router, usePage } from '@inertiajs/vue3';
 import { Pencil, Plus, Shield, Trash2 } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
-import RoleController from '@/actions/App/Http/Controllers/Admin/RoleController';
+import RoleController from '@/actions/App/Http/Controllers/Admin/Role/RoleController';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';

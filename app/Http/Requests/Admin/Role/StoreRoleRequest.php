@@ -2,22 +2,21 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Requests\Admin;
+namespace App\Http\Requests\Admin\Role;
 
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use Spatie\Permission\Models\Role;
 
-class UpdateRoleRequest extends FormRequest
+class StoreRoleRequest extends FormRequest
 {
     /**
      * Determina se o usuário está autorizado a fazer esta requisição.
      */
     public function authorize(): bool
     {
-        return $this->user()?->can(RolePermissionSeeder::PERMISSION_PERMISSIONS_UPDATE) ?? false;
+        return $this->user()?->can(RolePermissionSeeder::PERMISSION_PERMISSIONS_CREATE) ?? false;
     }
 
     /**
@@ -27,17 +26,12 @@ class UpdateRoleRequest extends FormRequest
      */
     public function rules(): array
     {
-        /** @var Role $role */
-        $role = $this->route('role');
-
         return [
             'name' => [
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('roles', 'name')
-                    ->where('guard_name', 'web')
-                    ->ignore($role->id),
+                Rule::unique('roles', 'name')->where('guard_name', 'web'),
             ],
         ];
     }

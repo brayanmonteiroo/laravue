@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Admin\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
@@ -12,7 +12,6 @@ class DashboardController extends Controller
 {
     /**
      * Renderiza a página de dashboard.
-     * @return Response
      */
     public function __invoke(): Response
     {

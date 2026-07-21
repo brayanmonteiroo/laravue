@@ -7,6 +7,7 @@ use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -26,6 +27,15 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+
+        Gate::guessPolicyNamesUsing(function (string $modelClass): array {
+            $modelName = class_basename($modelClass);
+
+            return [
+                "App\\Policies\\{$modelName}\\{$modelName}Policy",
+                "App\\Policies\\{$modelName}Policy",
+            ];
+        });
 
         RedirectIfAuthenticated::redirectUsing(function (): string {
             $user = auth()->user();

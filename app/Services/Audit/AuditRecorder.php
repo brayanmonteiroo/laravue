@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services;
+namespace App\Services\Audit;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Request;

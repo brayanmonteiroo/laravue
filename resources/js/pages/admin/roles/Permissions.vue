@@ -12,7 +12,7 @@ import {
 } from 'lucide-vue-next';
 import { computed, watch, watchEffect } from 'vue';
 import type { Component } from 'vue';
-import RolePermissionController from '@/actions/App/Http/Controllers/Admin/RolePermissionController';
+import RolePermissionController from '@/actions/App/Http/Controllers/Admin/RolePermission/RolePermissionController';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import { Button } from '@/components/ui/button';

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Form, Head, Link } from '@inertiajs/vue3';
 import { Save, X } from 'lucide-vue-next';
-import UserController from '@/actions/App/Http/Controllers/Admin/UserController';
+import UserController from '@/actions/App/Http/Controllers/Admin/User/UserController';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
 import PasswordInput from '@/components/PasswordInput.vue';

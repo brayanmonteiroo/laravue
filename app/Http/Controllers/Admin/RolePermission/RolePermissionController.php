@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Admin\RolePermission;
 
+use App\Http\Controllers\Admin\Role\RoleController;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Admin\SyncRolePermissionsRequest;
-use App\Services\AuditRecorder;
+use App\Http\Requests\Admin\RolePermission\SyncRolePermissionsRequest;
+use App\Services\Audit\AuditRecorder;
 use App\Support\PermissionCatalog;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Http\RedirectResponse;
