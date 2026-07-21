@@ -11,7 +11,7 @@ test('tela de login pode ser exibida', function () {
 });
 
 test('usuário autenticado com acesso ao painel é redirecionado ao abrir login', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->administrator()->create();
 
     $this->actingAs($user)
         ->get(route('login'))
@@ -27,7 +27,7 @@ test('usuário autenticado sem permissão de painel é redirecionado à home ao 
 });
 
 test('usuários podem autenticar pela tela de login', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->administrator()->create();
 
     $response = $this->post(route('login.store'), [
         'email' => $user->email,

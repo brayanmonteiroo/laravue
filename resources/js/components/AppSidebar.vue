@@ -18,25 +18,25 @@ import { PERMISSIONS } from '@/constants/permissions';
 import { home } from '@/routes';
 import { index as auditsIndex } from '@/routes/admin/audits';
 import { dashboard } from '@/routes/admin';
-import { index as permissionsIndex } from '@/routes/admin/permissions';
+import { index as rolesIndex } from '@/routes/admin/roles';
 import { index as usersIndex } from '@/routes/admin/users';
 import type { NavGroup } from '@/types';
 
 const page = usePage();
 const permissions = computed(() => page.props.auth.permissions ?? []);
 
-const canDashboard = computed(() =>
-    permissions.value.includes(PERMISSIONS.dashboard),
+const showDashboardInMenu = computed(() =>
+    permissions.value.includes(PERMISSIONS.dashboardSidebar),
 );
 
 const logoHref = computed(() =>
-    canDashboard.value ? dashboard() : home(),
+    permissions.value.includes(PERMISSIONS.dashboardView) ? dashboard() : home(),
 );
 
 const navGroups = computed((): NavGroup[] => {
     const menuItems = [];
 
-    if (canDashboard.value) {
+    if (showDashboardInMenu.value) {
         menuItems.push({
             title: 'Painel',
             href: dashboard(),
@@ -46,7 +46,7 @@ const navGroups = computed((): NavGroup[] => {
 
     const configItems = [];
 
-    if (permissions.value.includes(PERMISSIONS.usersManage)) {
+    if (permissions.value.includes(PERMISSIONS.usersSidebar)) {
         configItems.push({
             title: 'Usuários',
             href: usersIndex(),
@@ -54,15 +54,15 @@ const navGroups = computed((): NavGroup[] => {
         });
     }
 
-    if (permissions.value.includes(PERMISSIONS.permissionsManage)) {
+    if (permissions.value.includes(PERMISSIONS.permissionsSidebar)) {
         configItems.push({
-            title: 'Permissões',
-            href: permissionsIndex(),
+            title: 'Perfis',
+            href: rolesIndex(),
             icon: Shield,
         });
     }
 
-    if (permissions.value.includes(PERMISSIONS.auditsView)) {
+    if (permissions.value.includes(PERMISSIONS.auditsSidebar)) {
         configItems.push({
             title: 'Auditoria',
             href: auditsIndex(),

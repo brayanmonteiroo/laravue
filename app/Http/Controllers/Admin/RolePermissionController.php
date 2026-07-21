@@ -1,14 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Admin\StoreRoleRequest;
 use App\Http\Requests\Admin\SyncRolePermissionsRequest;
 use App\Services\AuditRecorder;
 use App\Support\PermissionCatalog;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\Permission\Models\Role;
@@ -16,70 +18,46 @@ use Spatie\Permission\Models\Role;
 class RolePermissionController extends Controller
 {
     /**
-     * Renderiza a página de permissões.
+     * Matriz de permissões de um perfil.
      */
-    public function index(): Response
+    public function edit(Request $request, Role $role): Response
     {
+        abort_unless(
+            $request->user()?->can(RolePermissionSeeder::PERMISSION_PERMISSIONS_VIEW) ?? false,
+            403,
+        );
+
+        abort_unless($role->guard_name === 'web', 404);
+
         RolePermissionSeeder::ensurePermissionsExist();
 
-        $roles = Role::query()
-            ->where('guard_name', 'web')
-            ->with('permissions:id,name')
-            ->orderBy('name')
-            ->get()
-            ->map(fn (Role $role) => [
+        $role->load('permissions:id,name');
+
+        return Inertia::render('admin/roles/Permissions', [
+            'role' => [
                 'id' => $role->id,
                 'name' => $role->name,
                 'permissions' => $role->permissions->pluck('name')->values()->all(),
-            ]);
-
-        return Inertia::render('admin/permissions/Index', [
-            'roles' => $roles,
+                'is_system' => RoleController::isSystemRole($role),
+            ],
             'permissionGroups' => PermissionCatalog::grouped(),
         ]);
     }
 
     /**
-     * Cria um novo perfil (role) com nenhuma permissão até ser configurado.
+     * Sincroniza as permissões de um perfil.
      */
-    public function storeRole(StoreRoleRequest $request, AuditRecorder $auditRecorder): RedirectResponse
-    {
-        $role = Role::create([
-            'name' => $request->validated('name'),
-            'guard_name' => 'web',
-        ]);
+    public function update(
+        SyncRolePermissionsRequest $request,
+        Role $role,
+        AuditRecorder $auditRecorder,
+    ): RedirectResponse {
+        abort_unless($role->guard_name === 'web', 404);
 
-        $auditRecorder->record(
-            auditable: $role,
-            event: 'created',
-            newValues: [
-                'name' => $role->name,
-                'permissions' => [],
-            ],
-        );
-
-        return to_route('admin.permissions.index')->with('flash', [
-            'type' => 'success',
-            'message' => 'Perfil criado com sucesso.',
-        ]);
-    }
-
-    /**
-     * Sincroniza as permissões para um único perfil.
-     */
-    public function update(SyncRolePermissionsRequest $request, AuditRecorder $auditRecorder): RedirectResponse
-    {
         RolePermissionSeeder::ensurePermissionsExist();
 
-        $data = $request->validated();
-
-        $role = Role::query()
-            ->where('guard_name', 'web')
-            ->whereKey($data['role_id'])
-            ->firstOrFail();
-
         $oldPermissions = $role->permissions()->pluck('name')->sort()->values()->all();
-        $newPermissions = collect($data['permissions'] ?? [])->sort()->values()->all();
+        $newPermissions = collect($request->validated('permissions') ?? [])->sort()->values()->all();
 
         $role->syncPermissions($newPermissions);
 
@@ -98,7 +76,7 @@ class RolePermissionController extends Controller
             );
         }
 
-        return to_route('admin.permissions.index')->with('flash', [
+        return to_route('admin.roles.permissions.edit', $role)->with('flash', [
             'type' => 'success',
             'message' => 'Permissões do perfil atualizadas com sucesso.',
         ]);

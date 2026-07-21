@@ -3,13 +3,15 @@
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Inertia\Testing\AssertableInertia as Assert;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 test('visitantes não acessam a gestão de usuários', function () {
     $this->get(route('admin.users.index'))
         ->assertRedirect(route('login'));
 });
 
-test('usuários sem users.manage não acessam a gestão de usuários', function () {
+test('usuários sem users.view não acessam a página de usuários', function () {
     $user = User::factory()->withoutRoles()->create();
 
     $this->actingAs($user)
@@ -17,7 +19,16 @@ test('usuários sem users.manage não acessam a gestão de usuários', function 
         ->assertForbidden();
 });
 
-test('usuários com users.manage podem listar usuários', function () {
+test('usuários com apenas users.sidebar não acessam a página de usuários', function () {
+    $user = User::factory()->withoutRoles()->create();
+    $user->givePermissionTo(RolePermissionSeeder::PERMISSION_USERS_SIDEBAR);
+
+    $this->actingAs($user)
+        ->get(route('admin.users.index'))
+        ->assertForbidden();
+});
+
+test('usuários com users.view podem acessar a página de usuários', function () {
     $user = User::factory()->administrator()->create();
 
     $this->actingAs($user)
@@ -84,8 +95,9 @@ test('listagem de usuários ordena por e-mail quando solicitado', function () {
             ->where('users.data.2.email', 'zz_admin@sort.test'));
 });
 
-test('usuários com users.manage podem criar usuário', function () {
+test('usuários com users.create podem criar usuário', function () {
     $admin = User::factory()->administrator()->create();
+    Role::create(['name' => 'Editor', 'guard_name' => 'web']);
 
     $this->actingAs($admin)
         ->post(route('admin.users.store'), [
@@ -93,7 +105,7 @@ test('usuários com users.manage podem criar usuário', function () {
             'email' => 'novo@example.com',
             'password' => 'Password123!',
             'password_confirmation' => 'Password123!',
-            'roles' => [RolePermissionSeeder::ROLE_USER],
+            'roles' => ['Editor'],
         ])
         ->assertRedirect(route('admin.users.index'))
         ->assertSessionHas('flash.type', 'success')
@@ -102,8 +114,30 @@ test('usuários com users.manage podem criar usuário', function () {
     $this->assertDatabaseHas('users', ['email' => 'novo@example.com']);
 
     expect(User::query()->where('email', 'novo@example.com')->first())
-        ->hasRole(RolePermissionSeeder::ROLE_USER)
+        ->hasRole('Editor')
         ->toBeTrue();
+});
+
+test('usuários com users.view sem users.create não criam usuário', function () {
+    $role = Role::create(['name' => 'UserPageViewer', 'guard_name' => 'web']);
+    $role->syncPermissions([
+        Permission::findByName(RolePermissionSeeder::PERMISSION_USERS_VIEW, 'web'),
+    ]);
+
+    $user = User::factory()->withoutRoles()->create();
+    $user->assignRole($role);
+
+    Role::create(['name' => 'Editor', 'guard_name' => 'web']);
+
+    $this->actingAs($user)
+        ->post(route('admin.users.store'), [
+            'name' => 'Bloqueado',
+            'email' => 'bloqueado@example.com',
+            'password' => 'Password123!',
+            'password_confirmation' => 'Password123!',
+            'roles' => ['Editor'],
+        ])
+        ->assertForbidden();
 });
 
 test('usuários não podem excluir a si mesmos pela gestão de usuários', function () {
@@ -121,7 +155,7 @@ test('usuários não podem excluir a si mesmos pela gestão de usuários', funct
     expect($admin->fresh())->not->toBeNull();
 });
 
-test('usuários com users.manage podem ver a tela somente leitura do usuário', function () {
+test('usuários com users.show podem ver a tela somente leitura do usuário', function () {
     $admin = User::factory()->administrator()->create();
     $target = User::factory()->create(['name' => 'Usuário Alvo']);
 
@@ -134,11 +168,26 @@ test('usuários com users.manage podem ver a tela somente leitura do usuário', 
             ->where('user.email', $target->email));
 });
 
-test('usuários sem users.manage não veem a página de detalhe do usuário', function () {
+test('usuários sem users.show não veem a página de detalhe do usuário', function () {
     $user = User::factory()->withoutRoles()->create();
     $target = User::factory()->create();
 
     $this->actingAs($user)
         ->get(route('admin.users.show', $target))
+        ->assertForbidden();
+});
+
+test('usuários com users.show sem users.update não acessam a edição', function () {
+    $role = Role::create(['name' => 'Viewer', 'guard_name' => 'web']);
+    $role->syncPermissions([
+        Permission::findByName(RolePermissionSeeder::PERMISSION_USERS_SHOW, 'web'),
+    ]);
+
+    $user = User::factory()->withoutRoles()->create();
+    $user->assignRole($role);
+    $target = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get(route('admin.users.edit', $target))
         ->assertForbidden();
 });

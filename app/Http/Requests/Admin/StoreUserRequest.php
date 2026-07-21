@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Admin;
 
 use App\Models\User;
-use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -13,11 +12,10 @@ class StoreUserRequest extends FormRequest
 {
     /**
      * Determina se o usuário está autorizado a fazer esta requisição.
-     * @return bool
      */
     public function authorize(): bool
     {
-        return $this->user()?->can(RolePermissionSeeder::PERMISSION_USERS_MANAGE) ?? false;
+        return $this->user()?->can('create', User::class) ?? false;
     }
 
     /**

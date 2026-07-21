@@ -238,10 +238,20 @@ class AuditPresenter
     private function permissionLabel(string $name): string
     {
         return match ($name) {
-            'dashboard.access' => 'Acessar painel administrativo',
-            'users.manage' => 'Gerenciar usuários',
-            'permissions.manage' => 'Gerenciar permissões dos perfis',
-            'audits.view' => 'Visualizar auditoria',
+            'dashboard.sidebar' => 'Exibir painel na sidebar',
+            'dashboard.view' => 'Visualizar página de painel',
+            'users.sidebar' => 'Exibir usuários na sidebar',
+            'users.view' => 'Visualizar página de usuários',
+            'users.show' => 'Visualizar usuário',
+            'users.create' => 'Cadastrar usuário',
+            'users.update' => 'Editar usuário',
+            'users.delete' => 'Excluir usuário',
+            'permissions.sidebar' => 'Exibir permissões na sidebar',
+            'permissions.view' => 'Visualizar página de permissões',
+            'permissions.create' => 'Cadastrar perfil',
+            'permissions.update' => 'Editar permissões dos perfis',
+            'audits.sidebar' => 'Exibir auditoria na sidebar',
+            'audits.view' => 'Visualizar página de auditoria',
             default => $name,
         };
     }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests\Admin;
 
 use App\Support\PermissionCatalog;
@@ -21,25 +23,20 @@ class SyncRolePermissionsRequest extends FormRequest
 
     /**
      * Determina se o usuário está autorizado a fazer esta requisição.
-     * @return bool
      */
     public function authorize(): bool
     {
-        return $this->user()?->can(RolePermissionSeeder::PERMISSION_PERMISSIONS_MANAGE) ?? false;
+        return $this->user()?->can(RolePermissionSeeder::PERMISSION_PERMISSIONS_UPDATE) ?? false;
     }
 
     /**
      * Define as regras de validação para a requisição.
+     *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
-            'role_id' => [
-                'required',
-                'integer',
-                Rule::exists('roles', 'id')->where('guard_name', 'web'),
-            ],
             'permissions' => ['nullable', 'array'],
             'permissions.*' => ['string', Rule::in(self::allowedPermissionNames())],
         ];
@@ -47,7 +44,6 @@ class SyncRolePermissionsRequest extends FormRequest
 
     /**
      * Prepara os dados para a validação.
-     * @return void
      */
     protected function prepareForValidation(): void
     {

@@ -1,9 +1,11 @@
 <?php
 
 use App\Models\User;
+use App\Support\AuditPresenter;
 use Database\Seeders\RolePermissionSeeder;
 use Inertia\Testing\AssertableInertia as Assert;
 use OwenIt\Auditing\Models\Audit;
+use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 test('visitantes não acessam a tela de auditoria', function () {
@@ -13,6 +15,20 @@ test('visitantes não acessam a tela de auditoria', function () {
 
 test('usuários sem audits.view não acessam a tela de auditoria', function () {
     $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get(route('admin.audits.index'))
+        ->assertForbidden();
+});
+
+test('usuários com apenas audits.sidebar não acessam a tela de auditoria', function () {
+    $role = Role::create(['name' => 'AuditMenuOnly', 'guard_name' => 'web']);
+    $role->syncPermissions([
+        Permission::findByName(RolePermissionSeeder::PERMISSION_AUDITS_SIDEBAR, 'web'),
+    ]);
+
+    $user = User::factory()->withoutRoles()->create();
+    $user->assignRole($role);
 
     $this->actingAs($user)
         ->get(route('admin.audits.index'))
@@ -40,25 +56,24 @@ test('administrador visualiza as últimas auditorias traduzidas', function () {
 
 test('sincronizar permissões de perfil gera registro de auditoria', function () {
     $admin = User::factory()->administrator()->create();
-    $userRole = Role::findByName(RolePermissionSeeder::ROLE_USER, 'web');
+    $targetRole = Role::create(['name' => 'Editor', 'guard_name' => 'web']);
 
     $beforeCount = Audit::query()->count();
 
     $this->actingAs($admin)
-        ->put(route('admin.permissions.update'), [
-            'role_id' => $userRole->id,
+        ->put(route('admin.roles.permissions.update', $targetRole), [
             'permissions' => [
-                RolePermissionSeeder::PERMISSION_DASHBOARD,
-                RolePermissionSeeder::PERMISSION_USERS_MANAGE,
+                RolePermissionSeeder::PERMISSION_DASHBOARD_SIDEBAR,
+                RolePermissionSeeder::PERMISSION_USERS_VIEW,
             ],
         ])
-        ->assertRedirect(route('admin.permissions.index'));
+        ->assertRedirect(route('admin.roles.permissions.edit', $targetRole));
 
     expect(Audit::query()->count())->toBeGreaterThan($beforeCount);
 
     $audit = Audit::query()
         ->where('auditable_type', Role::class)
-        ->where('auditable_id', $userRole->id)
+        ->where('auditable_id', $targetRole->id)
         ->where('event', 'updated')
         ->latest('id')
         ->first();
@@ -71,6 +86,7 @@ test('sincronizar permissões de perfil gera registro de auditoria', function ()
 test('atribuir papéis a usuário gera registro de auditoria', function () {
     $admin = User::factory()->administrator()->create();
     $user = User::factory()->withoutRoles()->create();
+    Role::create(['name' => 'Editor', 'guard_name' => 'web']);
 
     $beforeCount = Audit::query()->count();
 
@@ -78,7 +94,7 @@ test('atribuir papéis a usuário gera registro de auditoria', function () {
         ->put(route('admin.users.update', $user), [
             'name' => $user->name,
             'email' => $user->email,
-            'roles' => [RolePermissionSeeder::ROLE_USER],
+            'roles' => ['Editor'],
         ])
         ->assertRedirect(route('admin.users.index'));
 
@@ -92,25 +108,34 @@ test('atribuir papéis a usuário gera registro de auditoria', function () {
         ->first();
 
     expect($audit)->not->toBeNull();
-    expect($audit->new_values['roles'] ?? null)->toBe([RolePermissionSeeder::ROLE_USER]);
+    expect($audit->new_values['roles'] ?? null)->toBe(['Editor']);
 });
 
 test('tela de permissões exibe grupos alinhados ao menu lateral', function () {
     $admin = User::factory()->administrator()->create();
+    $targetRole = Role::create(['name' => 'Editor', 'guard_name' => 'web']);
 
     $this->actingAs($admin)
-        ->get(route('admin.permissions.index'))
+        ->get(route('admin.roles.permissions.edit', $targetRole))
         ->assertOk()
         ->assertInertia(fn ($page) => $page
-            ->component('admin/permissions/Index')
+            ->component('admin/roles/Permissions')
             ->has('permissionGroups', 2)
             ->where('permissionGroups.0.label', 'Menu')
+            ->where('permissionGroups.0.sections.0.label', 'Painel')
+            ->where('permissionGroups.0.sections.0.permissions', [
+                'dashboard.sidebar',
+                'dashboard.view',
+            ])
             ->where('permissionGroups.1.label', 'Configurações')
+            ->where('permissionGroups.1.sections.0.label', 'Usuários')
+            ->where('permissionGroups.1.sections.1.label', 'Permissões')
+            ->where('permissionGroups.1.sections.2.label', 'Auditoria')
         );
 });
 
 test('apresentador traduz alteração de permissões de perfil', function () {
-    $role = Role::findByName('User', 'web');
+    $role = Role::create(['name' => 'Editor', 'guard_name' => 'web']);
 
     $audit = Audit::query()->create([
         'user_type' => User::class,
@@ -119,20 +144,20 @@ test('apresentador traduz alteração de permissões de perfil', function () {
         'auditable_type' => Role::class,
         'auditable_id' => $role->id,
         'old_values' => [
-            'role_name' => 'User',
-            'permissions' => ['dashboard.access'],
+            'role_name' => 'Editor',
+            'permissions' => ['dashboard.sidebar'],
         ],
         'new_values' => [
-            'role_name' => 'User',
-            'permissions' => ['dashboard.access', 'users.manage'],
+            'role_name' => 'Editor',
+            'permissions' => ['dashboard.sidebar', 'users.view'],
         ],
     ]);
 
     $audit->load('user:id,name');
 
-    $presented = app(\App\Support\AuditPresenter::class)->present($audit);
+    $presented = app(AuditPresenter::class)->present($audit);
 
     expect($presented['action'])->toBe('Atualização');
-    expect($presented['subject'])->toBe('Perfil · Usuário');
-    expect($presented['details'])->toContain('Gerenciar usuários');
+    expect($presented['subject'])->toBe('Perfil · Editor');
+    expect($presented['details'])->toContain('Visualizar página de usuários');
 });

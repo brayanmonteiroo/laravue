@@ -10,7 +10,7 @@ test('visitantes são redirecionados para a página de login', function () {
 });
 
 test('usuários autenticados podem acessar o painel', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->administrator()->create();
     $this->actingAs($user);
 
     $response = $this->get(route('admin.dashboard'));
@@ -18,7 +18,7 @@ test('usuários autenticados podem acessar o painel', function () {
 });
 
 test('painel exibe contagens reais de usuários e perfis', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->administrator()->create();
     User::factory()->count(2)->create();
 
     $this->actingAs($user)

@@ -9,51 +9,38 @@ class UserPolicy
 {
     /**
      * Determina se o usuário pode visualizar qualquer modelo.
-     * @param User $user - O usuário.
-     * @return bool
      */
     public function viewAny(User $user): bool
     {
-        return $user->can(RolePermissionSeeder::PERMISSION_USERS_MANAGE);
+        return $user->can(RolePermissionSeeder::PERMISSION_USERS_VIEW);
     }
 
     /**
      * Determina se o usuário pode visualizar o modelo.
-     * @param User $user - O usuário.
-     * @param User $model - O modelo.
-     * @return bool
      */
     public function view(User $user, User $model): bool
     {
-        return $user->can(RolePermissionSeeder::PERMISSION_USERS_MANAGE);
+        return $user->can(RolePermissionSeeder::PERMISSION_USERS_SHOW);
     }
 
     /**
      * Determina se o usuário pode criar modelos.
-     * @param User $user - O usuário.
-     * @return bool
      */
     public function create(User $user): bool
     {
-        return $user->can(RolePermissionSeeder::PERMISSION_USERS_MANAGE);
+        return $user->can(RolePermissionSeeder::PERMISSION_USERS_CREATE);
     }
 
     /**
      * Determina se o usuário pode atualizar o modelo.
-     * @param User $user - O usuário.
-     * @param User $model - O modelo.
-     * @return bool
      */
     public function update(User $user, User $model): bool
     {
-        return $user->can(RolePermissionSeeder::PERMISSION_USERS_MANAGE);
+        return $user->can(RolePermissionSeeder::PERMISSION_USERS_UPDATE);
     }
 
     /**
      * Determina se o usuário pode deletar o modelo.
-     * @param User $user - O usuário.
-     * @param User $model - O modelo.
-     * @return bool
      */
     public function delete(User $user, User $model): bool
     {
@@ -61,14 +48,11 @@ class UserPolicy
             return false;
         }
 
-        return $user->can(RolePermissionSeeder::PERMISSION_USERS_MANAGE);
+        return $user->can(RolePermissionSeeder::PERMISSION_USERS_DELETE);
     }
 
     /**
      * Determina se o usuário pode restaurar o modelo.
-     * @param User $user - O usuário.
-     * @param User $model - O modelo.
-     * @return bool
      */
     public function restore(User $user, User $model): bool
     {
@@ -77,9 +61,6 @@ class UserPolicy
 
     /**
      * Determina se o usuário pode deletar permanentemente o modelo.
-     * @param User $user - O usuário.
-     * @param User $model - O modelo.
-     * @return bool
      */
     public function forceDelete(User $user, User $model): bool
     {

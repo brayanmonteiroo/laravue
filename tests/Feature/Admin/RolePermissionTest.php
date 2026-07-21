@@ -2,70 +2,62 @@
 
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
+use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
-test('visitantes não acessam a tela de permissões', function () {
-    $this->get(route('admin.permissions.index'))
-        ->assertRedirect(route('login'));
-});
+test('usuários com permissions.view sem permissions.update não sincronizam permissões', function () {
+    $role = Role::create(['name' => 'PermViewer', 'guard_name' => 'web']);
+    $role->syncPermissions([
+        Permission::findByName(RolePermissionSeeder::PERMISSION_PERMISSIONS_VIEW, 'web'),
+    ]);
 
-test('usuários sem permissions.manage não sincronizam permissões dos perfis', function () {
-    $user = User::factory()->create();
+    $user = User::factory()->withoutRoles()->create();
+    $user->assignRole($role);
+
+    $targetRole = Role::create(['name' => 'Editor', 'guard_name' => 'web']);
 
     $this->actingAs($user)
-        ->get(route('admin.permissions.index'))
+        ->get(route('admin.roles.permissions.edit', $targetRole))
+        ->assertOk();
+
+    $this->actingAs($user)
+        ->put(route('admin.roles.permissions.update', $targetRole), [
+            'permissions' => [
+                RolePermissionSeeder::PERMISSION_DASHBOARD_SIDEBAR,
+            ],
+        ])
         ->assertForbidden();
 });
 
-test('administrador pode visualizar e sincronizar permissões dos perfis', function () {
+test('administrador pode visualizar e sincronizar permissões de um perfil', function () {
     $admin = User::factory()->administrator()->create();
-
-    $userRole = Role::findByName(RolePermissionSeeder::ROLE_USER, 'web');
-
-    $this->actingAs($admin)
-        ->get(route('admin.permissions.index'))
-        ->assertOk();
+    $targetRole = Role::create(['name' => 'Editor', 'guard_name' => 'web']);
 
     $this->actingAs($admin)
-        ->put(route('admin.permissions.update'), [
-            'role_id' => $userRole->id,
+        ->get(route('admin.roles.permissions.edit', $targetRole))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('admin/roles/Permissions')
+            ->where('role.name', 'Editor')
+            ->has('permissionGroups', 2)
+            ->has('role.permissions')
+        );
+
+    $this->actingAs($admin)
+        ->put(route('admin.roles.permissions.update', $targetRole), [
             'permissions' => [
-                RolePermissionSeeder::PERMISSION_DASHBOARD,
-                RolePermissionSeeder::PERMISSION_USERS_MANAGE,
+                RolePermissionSeeder::PERMISSION_DASHBOARD_SIDEBAR,
+                RolePermissionSeeder::PERMISSION_USERS_VIEW,
             ],
         ])
-        ->assertRedirect(route('admin.permissions.index'))
+        ->assertRedirect(route('admin.roles.permissions.edit', $targetRole))
         ->assertSessionHas('flash.type', 'success')
         ->assertSessionHas(
             'flash.message',
             'Permissões do perfil atualizadas com sucesso.',
         );
 
-    expect($userRole->fresh())
-        ->hasPermissionTo(RolePermissionSeeder::PERMISSION_USERS_MANAGE)
+    expect($targetRole->fresh())
+        ->hasPermissionTo(RolePermissionSeeder::PERMISSION_USERS_VIEW)
         ->toBeTrue();
-});
-
-test('administrador pode criar um novo perfil', function () {
-    $admin = User::factory()->administrator()->create();
-
-    $this->actingAs($admin)
-        ->post(route('admin.permissions.roles.store'), [
-            'name' => 'Editor',
-        ])
-        ->assertRedirect(route('admin.permissions.index'))
-        ->assertSessionHas('flash.type', 'success')
-        ->assertSessionHas('flash.message', 'Perfil criado com sucesso.');
-
-    expect(Role::findByName('Editor', 'web'))->not->toBeNull();
-});
-
-test('criar perfil com nome duplicado falha na validação', function () {
-    $admin = User::factory()->administrator()->create();
-
-    $this->actingAs($admin)
-        ->post(route('admin.permissions.roles.store'), [
-            'name' => RolePermissionSeeder::ROLE_USER,
-        ])
-        ->assertSessionHasErrors('name');
 });

@@ -19,18 +19,6 @@ class UserFactory extends Factory
     protected static ?string $password;
 
     /**
-     * Configure the model factory.
-     */
-    public function configure(): static
-    {
-        return $this->afterCreating(function (User $user): void {
-            if ($user->roles()->doesntExist()) {
-                $user->assignRole(RolePermissionSeeder::ROLE_USER);
-            }
-        });
-    }
-
-    /**
      * Define the model's default state.
      *
      * @return array<string, mixed>
