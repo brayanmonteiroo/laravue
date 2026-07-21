@@ -40,7 +40,7 @@ class AppServiceProvider extends ServiceProvider
         RedirectIfAuthenticated::redirectUsing(function (): string {
             $user = auth()->user();
 
-            if ($user?->hasPermissionTo(RolePermissionSeeder::PERMISSION_DASHBOARD_VIEW)) {
+            if ($user?->can(RolePermissionSeeder::PERMISSION_DASHBOARD_VIEW)) {
                 return route('admin.dashboard', absolute: false);
             }
 

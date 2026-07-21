@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
+use Spatie\Permission\Models\Role;
 
 test('página 404 pública aponta para a home externa', function () {
     $response = $this->get('/rota-inexistente-para-teste-de-erro-404');
@@ -56,7 +58,7 @@ test('usuário autenticado via sessão em 404 no admin volta para o dashboard', 
         ->assertDontSee('Voltar ao início', false);
 });
 
-test('usuário autenticado sem permissão vê página 403 e volta para a home', function () {
+test('usuário autenticado sem nenhuma permissão admin em 403 volta para a home', function () {
     $user = User::factory()->withoutRoles()->create();
 
     $this->actingAs($user)
@@ -64,7 +66,27 @@ test('usuário autenticado sem permissão vê página 403 e volta para a home', 
         ->assertForbidden()
         ->assertSee('403', false)
         ->assertSee('Voltar ao início', false)
-        ->assertSee('href="'.route('home').'"', false);
+        ->assertSee('href="'.route('home').'"', false)
+        ->assertDontSee('Voltar ao painel', false);
+});
+
+test('usuário sem painel mas com usuários em 403 vai para usuários', function () {
+    $role = Role::create(['name' => 'so-usuarios', 'guard_name' => 'web']);
+    $role->syncPermissions([
+        RolePermissionSeeder::PERMISSION_USERS_VIEW,
+        RolePermissionSeeder::PERMISSION_USERS_SIDEBAR,
+    ]);
+
+    $user = User::factory()->withoutRoles()->create();
+    $user->assignRole($role);
+
+    $this->actingAs($user)
+        ->get(route('admin.dashboard'))
+        ->assertForbidden()
+        ->assertSee('Ir para Usuários', false)
+        ->assertSee('href="'.route('admin.users.index').'"', false)
+        ->assertDontSee('Voltar ao painel', false)
+        ->assertDontSee('Voltar ao início', false);
 });
 
 test('textos de erro HTTP são traduzidos para português', function () {
@@ -77,6 +99,9 @@ test('textos de erro HTTP são traduzidos para português', function () {
     expect(__('Unauthorized'))->toBe('Não autorizado');
     expect(__('Back to home'))->toBe('Voltar ao início');
     expect(__('Back to dashboard'))->toBe('Voltar ao painel');
+    expect(__('Go to users'))->toBe('Ir para Usuários');
+    expect(__('Go to roles'))->toBe('Ir para Perfis');
+    expect(__('Go to audits'))->toBe('Ir para Auditoria');
 });
 
 test('mensagens de negação do Spatie Permission são traduzidas para português', function () {
@@ -84,4 +109,87 @@ test('mensagens de negação do Spatie Permission são traduzidas para portuguê
         ->toBe('O usuário não tem as permissões necessárias.');
     expect(__('User is not logged in.'))
         ->toBe('O usuário não está autenticado.');
+});
+
+test('visita Inertia 403 com painel renderiza página integrada e CTA do painel', function () {
+    $role = Role::create(['name' => 'painel-sem-perfis', 'guard_name' => 'web']);
+    $role->syncPermissions([
+        RolePermissionSeeder::PERMISSION_DASHBOARD_VIEW,
+        RolePermissionSeeder::PERMISSION_DASHBOARD_SIDEBAR,
+    ]);
+
+    $user = User::factory()->withoutRoles()->create();
+    $user->assignRole($role);
+
+    $targetRole = Role::findByName(RolePermissionSeeder::ROLE_ADMIN);
+    $inertiaVersion = is_file(public_path('build/manifest.json'))
+        ? hash_file('xxh128', public_path('build/manifest.json'))
+        : '';
+
+    $this->actingAs($user)
+        ->withHeaders([
+            'X-Inertia' => 'true',
+            'X-Inertia-Version' => $inertiaVersion,
+            'X-Requested-With' => 'XMLHttpRequest',
+        ])
+        ->get(route('admin.roles.permissions.edit', $targetRole))
+        ->assertForbidden()
+        ->assertHeader('X-Inertia', 'true')
+        ->assertJsonPath('component', 'errors/Error')
+        ->assertJsonPath('props.status', 403)
+        ->assertJsonPath('props.ctaUrl', route('admin.dashboard'))
+        ->assertJsonPath('props.ctaLabel', 'Voltar ao painel')
+        ->assertJsonPath('props.crumbTitle', 'Painel')
+        ->assertJsonPath('props.message', 'O usuário não tem as permissões necessárias.');
+});
+
+test('visita Inertia 403 sem permissão admin oferece CTA da home', function () {
+    $user = User::factory()->withoutRoles()->create();
+    $inertiaVersion = is_file(public_path('build/manifest.json'))
+        ? hash_file('xxh128', public_path('build/manifest.json'))
+        : '';
+
+    $this->actingAs($user)
+        ->withHeaders([
+            'X-Inertia' => 'true',
+            'X-Inertia-Version' => $inertiaVersion,
+            'X-Requested-With' => 'XMLHttpRequest',
+        ])
+        ->get(route('admin.dashboard'))
+        ->assertForbidden()
+        ->assertHeader('X-Inertia', 'true')
+        ->assertJsonPath('component', 'errors/Error')
+        ->assertJsonPath('props.status', 403)
+        ->assertJsonPath('props.ctaUrl', route('home'))
+        ->assertJsonPath('props.ctaLabel', 'Voltar ao início')
+        ->assertJsonPath('props.crumbTitle', 'Início');
+});
+
+test('visita Inertia 403 sem painel mas com perfis oferece CTA de perfis', function () {
+    $role = Role::create(['name' => 'so-perfis', 'guard_name' => 'web']);
+    $role->syncPermissions([
+        RolePermissionSeeder::PERMISSION_PERMISSIONS_VIEW,
+        RolePermissionSeeder::PERMISSION_PERMISSIONS_SIDEBAR,
+    ]);
+
+    $user = User::factory()->withoutRoles()->create();
+    $user->assignRole($role);
+
+    $inertiaVersion = is_file(public_path('build/manifest.json'))
+        ? hash_file('xxh128', public_path('build/manifest.json'))
+        : '';
+
+    $this->actingAs($user)
+        ->withHeaders([
+            'X-Inertia' => 'true',
+            'X-Inertia-Version' => $inertiaVersion,
+            'X-Requested-With' => 'XMLHttpRequest',
+        ])
+        ->get(route('admin.dashboard'))
+        ->assertForbidden()
+        ->assertHeader('X-Inertia', 'true')
+        ->assertJsonPath('component', 'errors/Error')
+        ->assertJsonPath('props.ctaUrl', route('admin.roles.index'))
+        ->assertJsonPath('props.ctaLabel', 'Ir para Perfis')
+        ->assertJsonPath('props.crumbTitle', 'Perfis');
 });

@@ -143,17 +143,9 @@
     </head>
     <body>
         @php
-            $canAccessDashboard = auth()->user()?->hasPermissionTo(
-                \Database\Seeders\RolePermissionSeeder::PERMISSION_DASHBOARD_VIEW,
-            );
-
-            if ($canAccessDashboard) {
-                $homeUrl = route('admin.dashboard');
-                $homeLabel = __('Back to dashboard');
-            } else {
-                $homeUrl = route('home');
-                $homeLabel = __('Back to home');
-            }
+            $navigation = \App\Support\ErrorPageNavigation::for(auth()->user());
+            $homeUrl = $navigation['url'];
+            $homeLabel = $navigation['label'];
         @endphp
 
         <main class="wrap" role="main">
