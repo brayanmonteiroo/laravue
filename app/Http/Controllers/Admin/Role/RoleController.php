@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin\Role;
 
+use App\Enums\Permission;
+use App\Enums\Role as RoleEnum;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Role\StoreRoleRequest;
 use App\Http\Requests\Admin\Role\UpdateRoleRequest;
 use App\Services\Audit\AuditRecorder;
-use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -19,19 +20,18 @@ class RoleController extends Controller
 {
     /**
      * Nomes dos perfis de sistema.
+     *
      * @return list<string>
      */
     public static function systemRoleNames(): array
     {
         return [
-            RolePermissionSeeder::ROLE_ADMIN,
+            RoleEnum::Administrator->value,
         ];
     }
 
     /**
      * Determina se um perfil é de sistema.
-     * @param Role $role
-     * @return bool
      */
     public static function isSystemRole(Role $role): bool
     {
@@ -40,17 +40,12 @@ class RoleController extends Controller
 
     /**
      * Lista os perfis (roles) do guard web.
-     * @param Request $request
-     * @return Response
      */
     public function index(Request $request): Response
     {
-        abort_unless(
-            $request->user()?->can(RolePermissionSeeder::PERMISSION_PERMISSIONS_VIEW) ?? false,
-            403,
-        );
+        $this->authorize('viewAny', Role::class);
 
-        $canUpdate = $request->user()?->can(RolePermissionSeeder::PERMISSION_PERMISSIONS_UPDATE) ?? false;
+        $canUpdate = $request->user()?->can(Permission::PermissionsUpdate) ?? false;
 
         $roles = Role::query()
             ->where('guard_name', 'web')
@@ -80,9 +75,6 @@ class RoleController extends Controller
 
     /**
      * Cria um novo perfil sem permissões.
-     * @param StoreRoleRequest $request
-     * @param AuditRecorder $auditRecorder
-     * @return RedirectResponse
      */
     public function store(StoreRoleRequest $request, AuditRecorder $auditRecorder): RedirectResponse
     {
@@ -102,16 +94,12 @@ class RoleController extends Controller
 
         return to_route('admin.roles.index')->with('flash', [
             'type' => 'success',
-            'message' => 'Perfil criado com sucesso.',
+            'message' => __('Role created successfully.'),
         ]);
     }
 
     /**
      * Renomeia um perfil (exceto roles de sistema).
-     * @param UpdateRoleRequest $request
-     * @param Role $role
-     * @param AuditRecorder $auditRecorder
-     * @return RedirectResponse
      */
     public function update(UpdateRoleRequest $request, Role $role, AuditRecorder $auditRecorder): RedirectResponse
     {
@@ -120,7 +108,7 @@ class RoleController extends Controller
         if (self::isSystemRole($role)) {
             return back()->with('flash', [
                 'type' => 'error',
-                'message' => 'Perfis de sistema não podem ser renomeados.',
+                'message' => __('System roles cannot be renamed.'),
             ]);
         }
 
@@ -141,30 +129,23 @@ class RoleController extends Controller
 
         return to_route('admin.roles.index')->with('flash', [
             'type' => 'success',
-            'message' => 'Perfil atualizado com sucesso.',
+            'message' => __('Role updated successfully.'),
         ]);
     }
 
     /**
      * Exclui um perfil (exceto sistema e com usuários vinculados).
-     * @param Request $request
-     * @param Role $role
-     * @param AuditRecorder $auditRecorder
-     * @return RedirectResponse
      */
-    public function destroy(Request $request, Role $role, AuditRecorder $auditRecorder): RedirectResponse
+    public function destroy(Role $role, AuditRecorder $auditRecorder): RedirectResponse
     {
-        abort_unless(
-            $request->user()?->can(RolePermissionSeeder::PERMISSION_PERMISSIONS_UPDATE) ?? false,
-            403,
-        );
+        $this->authorize('delete', $role);
 
         abort_unless($role->guard_name === 'web', 404);
 
         if (self::isSystemRole($role)) {
             return back()->with('flash', [
                 'type' => 'error',
-                'message' => 'Perfis de sistema não podem ser excluídos.',
+                'message' => __('System roles cannot be deleted.'),
             ]);
         }
 
@@ -173,7 +154,7 @@ class RoleController extends Controller
         if ($usersCount > 0) {
             return back()->with('flash', [
                 'type' => 'error',
-                'message' => 'Não é possível excluir um perfil que ainda possui usuários vinculados.',
+                'message' => __('Cannot delete a role that still has users assigned.'),
             ]);
         }
 
@@ -192,7 +173,7 @@ class RoleController extends Controller
 
         return to_route('admin.roles.index')->with('flash', [
             'type' => 'success',
-            'message' => 'Perfil excluído com sucesso.',
+            'message' => __('Role deleted successfully.'),
         ]);
     }
 }

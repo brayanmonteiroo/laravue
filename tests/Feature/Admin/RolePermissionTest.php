@@ -1,14 +1,14 @@
 <?php
 
+use App\Enums\Permission as PermissionEnum;
 use App\Models\User;
-use Database\Seeders\RolePermissionSeeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 test('usuários com permissions.view sem permissions.update não sincronizam permissões', function () {
     $role = Role::create(['name' => 'PermViewer', 'guard_name' => 'web']);
     $role->syncPermissions([
-        Permission::findByName(RolePermissionSeeder::PERMISSION_PERMISSIONS_VIEW, 'web'),
+        Permission::findByName(PermissionEnum::PermissionsView->value, 'web'),
     ]);
 
     $user = User::factory()->withoutRoles()->create();
@@ -23,7 +23,7 @@ test('usuários com permissions.view sem permissions.update não sincronizam per
     $this->actingAs($user)
         ->put(route('admin.roles.permissions.update', $targetRole), [
             'permissions' => [
-                RolePermissionSeeder::PERMISSION_DASHBOARD_SIDEBAR,
+                PermissionEnum::DashboardSidebar->value,
             ],
         ])
         ->assertForbidden();
@@ -46,18 +46,18 @@ test('administrador pode visualizar e sincronizar permissões de um perfil', fun
     $this->actingAs($admin)
         ->put(route('admin.roles.permissions.update', $targetRole), [
             'permissions' => [
-                RolePermissionSeeder::PERMISSION_DASHBOARD_SIDEBAR,
-                RolePermissionSeeder::PERMISSION_USERS_VIEW,
+                PermissionEnum::DashboardSidebar->value,
+                PermissionEnum::UsersView->value,
             ],
         ])
         ->assertRedirect(route('admin.roles.permissions.edit', $targetRole))
         ->assertSessionHas('flash.type', 'success')
         ->assertSessionHas(
             'flash.message',
-            'Permissões do perfil atualizadas com sucesso.',
+            __('Role permissions updated successfully.'),
         );
 
     expect($targetRole->fresh())
-        ->hasPermissionTo(RolePermissionSeeder::PERMISSION_USERS_VIEW)
+        ->hasPermissionTo(PermissionEnum::UsersView)
         ->toBeTrue();
 });

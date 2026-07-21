@@ -1,7 +1,7 @@
 <?php
 
+use App\Enums\Permission as PermissionEnum;
 use App\Models\User;
-use Database\Seeders\RolePermissionSeeder;
 use Inertia\Testing\AssertableInertia as Assert;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -21,7 +21,7 @@ test('usuários sem users.view não acessam a página de usuários', function ()
 
 test('usuários com apenas users.sidebar não acessam a página de usuários', function () {
     $user = User::factory()->withoutRoles()->create();
-    $user->givePermissionTo(RolePermissionSeeder::PERMISSION_USERS_SIDEBAR);
+    $user->givePermissionTo(PermissionEnum::UsersSidebar);
 
     $this->actingAs($user)
         ->get(route('admin.users.index'))
@@ -109,7 +109,7 @@ test('usuários com users.create podem criar usuário', function () {
         ])
         ->assertRedirect(route('admin.users.index'))
         ->assertSessionHas('flash.type', 'success')
-        ->assertSessionHas('flash.message', 'Usuário criado com sucesso.');
+        ->assertSessionHas('flash.message', __('User created successfully.'));
 
     $this->assertDatabaseHas('users', ['email' => 'novo@example.com']);
 
@@ -121,7 +121,7 @@ test('usuários com users.create podem criar usuário', function () {
 test('usuários com users.view sem users.create não criam usuário', function () {
     $role = Role::create(['name' => 'UserPageViewer', 'guard_name' => 'web']);
     $role->syncPermissions([
-        Permission::findByName(RolePermissionSeeder::PERMISSION_USERS_VIEW, 'web'),
+        Permission::findByName(PermissionEnum::UsersView->value, 'web'),
     ]);
 
     $user = User::factory()->withoutRoles()->create();
@@ -180,7 +180,7 @@ test('usuários sem users.show não veem a página de detalhe do usuário', func
 test('usuários com users.show sem users.update não acessam a edição', function () {
     $role = Role::create(['name' => 'Viewer', 'guard_name' => 'web']);
     $role->syncPermissions([
-        Permission::findByName(RolePermissionSeeder::PERMISSION_USERS_SHOW, 'web'),
+        Permission::findByName(PermissionEnum::UsersShow->value, 'web'),
     ]);
 
     $user = User::factory()->withoutRoles()->create();

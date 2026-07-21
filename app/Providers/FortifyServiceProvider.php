@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Providers;
 
 use App\Actions\Fortify\ResetUserPassword;
@@ -70,7 +72,6 @@ class FortifyServiceProvider extends ServiceProvider
 
     /**
      * Configura o rate limiting.
-     * @return void
      */
     private function configureRateLimiting(): void
     {

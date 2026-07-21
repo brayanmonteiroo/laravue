@@ -1,0 +1,21 @@
+{
+  "User created successfully.": "User created successfully.",
+  "User updated successfully.": "User updated successfully.",
+  "User deleted successfully.": "User deleted successfully.",
+  "You cannot delete your own account.": "You cannot delete your own account.",
+  "Role created successfully.": "Role created successfully.",
+  "Role updated successfully.": "Role updated successfully.",
+  "Role deleted successfully.": "Role deleted successfully.",
+  "Role permissions updated successfully.": "Role permissions updated successfully.",
+  "System roles cannot be renamed.": "System roles cannot be renamed.",
+  "System roles cannot be deleted.": "System roles cannot be deleted.",
+  "Cannot delete a role that still has users assigned.": "Cannot delete a role that still has users assigned.",
+  "Permission group: Menu": "Menu",
+  "Permission group description: Menu": "Items shown in the main menu group.",
+  "Permission group: Settings": "Settings",
+  "Permission group description: Settings": "Items and actions in the Settings sidebar group.",
+  "Permission section: Dashboard": "Dashboard",
+  "Permission section: Users": "Users",
+  "Permission section: Permissions": "Permissions",
+  "Permission section: Audits": "Audits"
+}

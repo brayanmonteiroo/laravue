@@ -25,7 +25,7 @@ test('painel exibe contagens reais de usuários e perfis', function () {
         ->get(route('admin.dashboard'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->component('Dashboard')
+            ->component('admin/Dashboard')
             ->where('userCount', User::query()->count())
             ->where('roleCount', Role::query()->count()));
 });

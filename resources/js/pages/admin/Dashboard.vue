@@ -43,9 +43,7 @@ defineOptions({
 <template>
     <Head title="Painel" />
 
-    <div
-        class="min-w-0 space-y-6 px-4 py-6 md:px-6 lg:px-8"
-    >
+    <div class="space-y-6">
         <div>
             <h1 class="text-2xl font-semibold tracking-tight">Painel</h1>
             <p class="text-muted-foreground mt-1 text-sm">

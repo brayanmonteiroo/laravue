@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Providers;
 
+use App\Enums\Permission;
 use Carbon\CarbonImmutable;
-use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -40,7 +43,7 @@ class AppServiceProvider extends ServiceProvider
         RedirectIfAuthenticated::redirectUsing(function (): string {
             $user = auth()->user();
 
-            if ($user?->can(RolePermissionSeeder::PERMISSION_DASHBOARD_VIEW)) {
+            if ($user?->can(Permission::DashboardView)) {
                 return route('admin.dashboard', absolute: false);
             }
 
@@ -54,6 +57,8 @@ class AppServiceProvider extends ServiceProvider
     protected function configureDefaults(): void
     {
         Date::use(CarbonImmutable::class);
+
+        Model::preventLazyLoading(! app()->isProduction());
 
         DB::prohibitDestructiveCommands(
             app()->isProduction(),

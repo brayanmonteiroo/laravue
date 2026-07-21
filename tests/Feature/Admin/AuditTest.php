@@ -1,8 +1,8 @@
 <?php
 
+use App\Enums\Permission as PermissionEnum;
 use App\Models\User;
 use App\Support\AuditPresenter;
-use Database\Seeders\RolePermissionSeeder;
 use Inertia\Testing\AssertableInertia as Assert;
 use OwenIt\Auditing\Models\Audit;
 use Spatie\Permission\Models\Permission;
@@ -24,7 +24,7 @@ test('usuários sem audits.view não acessam a tela de auditoria', function () {
 test('usuários com apenas audits.sidebar não acessam a tela de auditoria', function () {
     $role = Role::create(['name' => 'AuditMenuOnly', 'guard_name' => 'web']);
     $role->syncPermissions([
-        Permission::findByName(RolePermissionSeeder::PERMISSION_AUDITS_SIDEBAR, 'web'),
+        Permission::findByName(PermissionEnum::AuditsSidebar->value, 'web'),
     ]);
 
     $user = User::factory()->withoutRoles()->create();
@@ -63,8 +63,8 @@ test('sincronizar permissões de perfil gera registro de auditoria', function ()
     $this->actingAs($admin)
         ->put(route('admin.roles.permissions.update', $targetRole), [
             'permissions' => [
-                RolePermissionSeeder::PERMISSION_DASHBOARD_SIDEBAR,
-                RolePermissionSeeder::PERMISSION_USERS_VIEW,
+                PermissionEnum::DashboardSidebar->value,
+                PermissionEnum::UsersView->value,
             ],
         ])
         ->assertRedirect(route('admin.roles.permissions.edit', $targetRole));
@@ -121,16 +121,16 @@ test('tela de permissões exibe grupos alinhados ao menu lateral', function () {
         ->assertInertia(fn ($page) => $page
             ->component('admin/roles/Permissions')
             ->has('permissionGroups', 2)
-            ->where('permissionGroups.0.label', 'Menu')
-            ->where('permissionGroups.0.sections.0.label', 'Painel')
+            ->where('permissionGroups.0.label', __('Permission group: Menu'))
+            ->where('permissionGroups.0.sections.0.label', __('Permission section: Dashboard'))
             ->where('permissionGroups.0.sections.0.permissions', [
                 'dashboard.sidebar',
                 'dashboard.view',
             ])
-            ->where('permissionGroups.1.label', 'Configurações')
-            ->where('permissionGroups.1.sections.0.label', 'Usuários')
-            ->where('permissionGroups.1.sections.1.label', 'Permissões')
-            ->where('permissionGroups.1.sections.2.label', 'Auditoria')
+            ->where('permissionGroups.1.label', __('Permission group: Settings'))
+            ->where('permissionGroups.1.sections.0.label', __('Permission section: Users'))
+            ->where('permissionGroups.1.sections.1.label', __('Permission section: Permissions'))
+            ->where('permissionGroups.1.sections.2.label', __('Permission section: Audits'))
         );
 });
 

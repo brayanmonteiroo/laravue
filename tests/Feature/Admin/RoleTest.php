@@ -1,7 +1,8 @@
 <?php
 
+use App\Enums\Permission as PermissionEnum;
+use App\Enums\Role as AppRole;
 use App\Models\User;
-use Database\Seeders\RolePermissionSeeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -27,7 +28,7 @@ test('administrador pode listar perfis', function () {
         ->assertInertia(fn ($page) => $page
             ->component('admin/roles/Index')
             ->has('roles')
-            ->where('roles.0.name', RolePermissionSeeder::ROLE_ADMIN)
+            ->where('roles.0.name', AppRole::Administrator->value)
             ->where('roles.0.is_system', true)
             ->where('roles.0.can_rename', false)
             ->where('roles.0.can_delete', false)
@@ -51,7 +52,7 @@ test('administrador pode criar um novo perfil', function () {
         ])
         ->assertRedirect(route('admin.roles.index'))
         ->assertSessionHas('flash.type', 'success')
-        ->assertSessionHas('flash.message', 'Perfil criado com sucesso.');
+        ->assertSessionHas('flash.message', __('Role created successfully.'));
 
     expect(Role::findByName('Editor', 'web'))->not->toBeNull();
 });
@@ -59,7 +60,7 @@ test('administrador pode criar um novo perfil', function () {
 test('usuários com permissions.view sem permissions.create não criam perfil', function () {
     $role = Role::create(['name' => 'PermViewerOnly', 'guard_name' => 'web']);
     $role->syncPermissions([
-        Permission::findByName(RolePermissionSeeder::PERMISSION_PERMISSIONS_VIEW, 'web'),
+        Permission::findByName(PermissionEnum::PermissionsView->value, 'web'),
     ]);
 
     $user = User::factory()->withoutRoles()->create();
@@ -77,7 +78,7 @@ test('criar perfil com nome duplicado falha na validação', function () {
 
     $this->actingAs($admin)
         ->post(route('admin.roles.store'), [
-            'name' => RolePermissionSeeder::ROLE_ADMIN,
+            'name' => AppRole::Administrator->value,
         ])
         ->assertSessionHasErrors('name');
 });
@@ -98,7 +99,7 @@ test('administrador pode renomear perfil customizado', function () {
 
 test('não é possível renomear perfil de sistema', function () {
     $admin = User::factory()->administrator()->create();
-    $role = Role::findByName(RolePermissionSeeder::ROLE_ADMIN, 'web');
+    $role = Role::findByName(AppRole::Administrator->value, 'web');
 
     $this->actingAs($admin)
         ->put(route('admin.roles.update', $role), [
@@ -107,7 +108,7 @@ test('não é possível renomear perfil de sistema', function () {
         ->assertRedirect()
         ->assertSessionHas('flash.type', 'error');
 
-    expect($role->fresh()->name)->toBe(RolePermissionSeeder::ROLE_ADMIN);
+    expect($role->fresh()->name)->toBe(AppRole::Administrator->value);
 });
 
 test('administrador pode excluir perfil customizado sem usuários', function () {
@@ -124,14 +125,14 @@ test('administrador pode excluir perfil customizado sem usuários', function () 
 
 test('não é possível excluir perfil de sistema', function () {
     $admin = User::factory()->administrator()->create();
-    $role = Role::findByName(RolePermissionSeeder::ROLE_ADMIN, 'web');
+    $role = Role::findByName(AppRole::Administrator->value, 'web');
 
     $this->actingAs($admin)
         ->delete(route('admin.roles.destroy', $role))
         ->assertRedirect()
         ->assertSessionHas('flash.type', 'error');
 
-    expect(Role::findByName(RolePermissionSeeder::ROLE_ADMIN, 'web'))->not->toBeNull();
+    expect(Role::findByName(AppRole::Administrator->value, 'web'))->not->toBeNull();
 });
 
 test('perfil customizado sem usuários pode ser excluído', function () {
@@ -170,7 +171,7 @@ test('não é possível excluir perfil com usuários vinculados', function () {
 test('usuários com apenas permissions.sidebar não acessam a lista de perfis', function () {
     $role = Role::create(['name' => 'PermMenuOnly', 'guard_name' => 'web']);
     $role->syncPermissions([
-        Permission::findByName(RolePermissionSeeder::PERMISSION_PERMISSIONS_SIDEBAR, 'web'),
+        Permission::findByName(PermissionEnum::PermissionsSidebar->value, 'web'),
     ]);
 
     $user = User::factory()->withoutRoles()->create();

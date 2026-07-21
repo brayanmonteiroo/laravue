@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Admin\Role;
 
-use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -17,7 +16,10 @@ class UpdateRoleRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user()?->can(RolePermissionSeeder::PERMISSION_PERMISSIONS_UPDATE) ?? false;
+        /** @var Role $role */
+        $role = $this->route('role');
+
+        return $this->user()?->can('update', $role) ?? false;
     }
 
     /**

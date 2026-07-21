@@ -1,7 +1,8 @@
 <?php
 
+use App\Enums\Permission as PermissionEnum;
+use App\Enums\Role as AppRole;
 use App\Models\User;
-use Database\Seeders\RolePermissionSeeder;
 use Spatie\Permission\Models\Role;
 
 test('página 404 pública aponta para a home externa', function () {
@@ -73,8 +74,8 @@ test('usuário autenticado sem nenhuma permissão admin em 403 volta para a home
 test('usuário sem painel mas com usuários em 403 vai para usuários', function () {
     $role = Role::create(['name' => 'so-usuarios', 'guard_name' => 'web']);
     $role->syncPermissions([
-        RolePermissionSeeder::PERMISSION_USERS_VIEW,
-        RolePermissionSeeder::PERMISSION_USERS_SIDEBAR,
+        PermissionEnum::UsersView,
+        PermissionEnum::UsersSidebar,
     ]);
 
     $user = User::factory()->withoutRoles()->create();
@@ -114,14 +115,14 @@ test('mensagens de negação do Spatie Permission são traduzidas para portuguê
 test('visita Inertia 403 com painel renderiza página integrada e CTA do painel', function () {
     $role = Role::create(['name' => 'painel-sem-perfis', 'guard_name' => 'web']);
     $role->syncPermissions([
-        RolePermissionSeeder::PERMISSION_DASHBOARD_VIEW,
-        RolePermissionSeeder::PERMISSION_DASHBOARD_SIDEBAR,
+        PermissionEnum::DashboardView,
+        PermissionEnum::DashboardSidebar,
     ]);
 
     $user = User::factory()->withoutRoles()->create();
     $user->assignRole($role);
 
-    $targetRole = Role::findByName(RolePermissionSeeder::ROLE_ADMIN);
+    $targetRole = Role::findByName(AppRole::Administrator->value);
     $inertiaVersion = is_file(public_path('build/manifest.json'))
         ? hash_file('xxh128', public_path('build/manifest.json'))
         : '';
@@ -168,8 +169,8 @@ test('visita Inertia 403 sem permissão admin oferece CTA da home', function () 
 test('visita Inertia 403 sem painel mas com perfis oferece CTA de perfis', function () {
     $role = Role::create(['name' => 'so-perfis', 'guard_name' => 'web']);
     $role->syncPermissions([
-        RolePermissionSeeder::PERMISSION_PERMISSIONS_VIEW,
-        RolePermissionSeeder::PERMISSION_PERMISSIONS_SIDEBAR,
+        PermissionEnum::PermissionsView,
+        PermissionEnum::PermissionsSidebar,
     ]);
 
     $user = User::factory()->withoutRoles()->create();

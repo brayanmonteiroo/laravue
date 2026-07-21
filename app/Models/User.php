@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -22,12 +24,14 @@ class User extends Authenticatable implements AuditableContract
 {
     /**
      * Usa os traits HasFactory, HasRoles, Notifiable e TwoFactorAuthenticatable.
+     *
      * @use HasFactory<UserFactory>
      */
     use AuditableTrait, HasFactory, HasRoles, Notifiable, TwoFactorAuthenticatable;
 
     /**
      * Define os atributos que devem ser excluídos do audit.
+     *
      * @var list<string>
      */
     protected array $auditExclude = [

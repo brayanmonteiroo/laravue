@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin\Dashboard;
 
 use App\Http\Controllers\Controller;
@@ -12,11 +14,10 @@ class DashboardController extends Controller
 {
     /**
      * Renderiza a página de dashboard.
-     * @return Response
      */
     public function __invoke(): Response
     {
-        return Inertia::render('Dashboard', [
+        return Inertia::render('admin/Dashboard', [
             'userCount' => User::query()->count(),
             'roleCount' => Role::query()->count(),
         ]);

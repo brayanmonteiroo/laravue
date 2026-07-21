@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
+use App\Enums\Role as RoleEnum;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -21,6 +24,6 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('36925814'),
         ]);
 
-        $user->assignRole(RolePermissionSeeder::ROLE_ADMIN);
+        $user->assignRole(RoleEnum::Administrator);
     }
 }

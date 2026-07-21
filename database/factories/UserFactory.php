@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
+use App\Enums\Role as RoleEnum;
 use App\Models\User;
-use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -75,7 +77,7 @@ class UserFactory extends Factory
     public function administrator(): static
     {
         return $this->afterCreating(function (User $user): void {
-            $user->syncRoles([RolePermissionSeeder::ROLE_ADMIN]);
+            $user->syncRoles([RoleEnum::Administrator]);
         });
     }
 }

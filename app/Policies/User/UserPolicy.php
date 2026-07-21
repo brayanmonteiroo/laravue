@@ -1,9 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Policies\User;
 
+use App\Enums\Permission;
 use App\Models\User;
-use Database\Seeders\RolePermissionSeeder;
 
 class UserPolicy
 {
@@ -12,7 +14,7 @@ class UserPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can(RolePermissionSeeder::PERMISSION_USERS_VIEW);
+        return $user->can(Permission::UsersView);
     }
 
     /**
@@ -20,7 +22,7 @@ class UserPolicy
      */
     public function view(User $user, User $model): bool
     {
-        return $user->can(RolePermissionSeeder::PERMISSION_USERS_SHOW);
+        return $user->can(Permission::UsersShow);
     }
 
     /**
@@ -28,7 +30,7 @@ class UserPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can(RolePermissionSeeder::PERMISSION_USERS_CREATE);
+        return $user->can(Permission::UsersCreate);
     }
 
     /**
@@ -36,7 +38,7 @@ class UserPolicy
      */
     public function update(User $user, User $model): bool
     {
-        return $user->can(RolePermissionSeeder::PERMISSION_USERS_UPDATE);
+        return $user->can(Permission::UsersUpdate);
     }
 
     /**
@@ -48,7 +50,7 @@ class UserPolicy
             return false;
         }
 
-        return $user->can(RolePermissionSeeder::PERMISSION_USERS_DELETE);
+        return $user->can(Permission::UsersDelete);
     }
 
     /**

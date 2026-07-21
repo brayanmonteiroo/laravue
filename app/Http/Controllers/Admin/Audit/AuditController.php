@@ -6,8 +6,6 @@ namespace App\Http\Controllers\Admin\Audit;
 
 use App\Http\Controllers\Controller;
 use App\Support\AuditPresenter;
-use Database\Seeders\RolePermissionSeeder;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use OwenIt\Auditing\Models\Audit;
@@ -18,16 +16,10 @@ class AuditController extends Controller
 
     /**
      * Lista as últimas auditorias do sistema.
-     * @param Request $request
-     * @param AuditPresenter $presenter
-     * @return Response
      */
-    public function index(Request $request, AuditPresenter $presenter): Response
+    public function index(AuditPresenter $presenter): Response
     {
-        abort_unless(
-            $request->user()?->can(RolePermissionSeeder::PERMISSION_AUDITS_VIEW) ?? false,
-            403,
-        );
+        $this->authorize('viewAny', Audit::class);
 
         $audits = Audit::query()
             ->with('user:id,name')

@@ -1,51 +1,25 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Seeders;
 
-use App\Support\PermissionCatalog;
+use App\Enums\Permission as PermissionEnum;
+use App\Enums\Role as RoleEnum;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 class RolePermissionSeeder extends Seeder
 {
-    public const PERMISSION_DASHBOARD_SIDEBAR = 'dashboard.sidebar';
-
-    public const PERMISSION_DASHBOARD_VIEW = 'dashboard.view';
-
-    public const PERMISSION_USERS_SIDEBAR = 'users.sidebar';
-
-    public const PERMISSION_USERS_VIEW = 'users.view';
-
-    public const PERMISSION_USERS_SHOW = 'users.show';
-
-    public const PERMISSION_USERS_CREATE = 'users.create';
-
-    public const PERMISSION_USERS_UPDATE = 'users.update';
-
-    public const PERMISSION_USERS_DELETE = 'users.delete';
-
-    public const PERMISSION_PERMISSIONS_SIDEBAR = 'permissions.sidebar';
-
-    public const PERMISSION_PERMISSIONS_VIEW = 'permissions.view';
-
-    public const PERMISSION_PERMISSIONS_CREATE = 'permissions.create';
-
-    public const PERMISSION_PERMISSIONS_UPDATE = 'permissions.update';
-
-    public const PERMISSION_AUDITS_SIDEBAR = 'audits.sidebar';
-
-    public const PERMISSION_AUDITS_VIEW = 'audits.view';
-
-    public const ROLE_ADMIN = 'Administrator';
-
     /**
      * Garante que todas as permissões do catálogo existam no banco.
      */
     public static function ensurePermissionsExist(string $guard = 'web'): void
     {
-        foreach (PermissionCatalog::allPermissionNames() as $name) {
-            Permission::findOrCreate($name, $guard);
+        foreach (PermissionEnum::cases() as $permission) {
+            Permission::findOrCreate($permission->value, $guard);
         }
     }
 
@@ -56,9 +30,13 @@ class RolePermissionSeeder extends Seeder
     {
         $guard = 'web';
 
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
+
         self::ensurePermissionsExist($guard);
 
-        $admin = Role::findOrCreate(self::ROLE_ADMIN, $guard);
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
+
+        $admin = Role::findOrCreate(RoleEnum::Administrator->value, $guard);
         $admin->syncPermissions(Permission::query()->where('guard_name', $guard)->get());
     }
 }

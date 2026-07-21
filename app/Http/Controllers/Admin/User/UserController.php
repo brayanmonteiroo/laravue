@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin\User;
 
 use App\Http\Controllers\Controller;
@@ -9,7 +11,6 @@ use App\Models\User;
 use App\Services\Audit\AuditRecorder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -21,6 +22,7 @@ class UserController extends Controller
 
     /**
      * Colunas ordenáveis.
+     *
      * @var list<string>
      */
     private const array SORTABLE = ['name', 'email', 'created_at'];
@@ -123,14 +125,12 @@ class UserController extends Controller
         // Remove o campo de papéis do array validado.
         unset($validated['roles']);
 
-        // Cria o usuário no sistema.
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
+            'password' => $validated['password'],
         ]);
 
-        // Sincroniza os papéis do usuário.
         $user->syncRoles($roles);
 
         if ($roles !== []) {
@@ -142,10 +142,9 @@ class UserController extends Controller
             );
         }
 
-        // Redireciona para a página de listagem de usuários.
         return to_route('admin.users.index')->with('flash', [
             'type' => 'success',
-            'message' => 'Usuário criado com sucesso.',
+            'message' => __('User created successfully.'),
         ]);
     }
 
@@ -209,10 +208,9 @@ class UserController extends Controller
             );
         }
 
-        // Redireciona para a página de listagem de usuários.
         return to_route('admin.users.index')->with('flash', [
             'type' => 'success',
-            'message' => 'Usuário atualizado com sucesso.',
+            'message' => __('User updated successfully.'),
         ]);
     }
 
@@ -224,19 +222,17 @@ class UserController extends Controller
         if (auth()->id() === $user->getKey()) {
             return to_route('admin.users.index')->with('flash', [
                 'type' => 'warning',
-                'message' => 'Você não pode excluir sua própria conta.',
+                'message' => __('You cannot delete your own account.'),
             ]);
         }
 
         $this->authorize('delete', $user);
 
-        // Remove o usuário do sistema.
         $user->delete();
 
-        // Redireciona para a página de listagem de usuários.
         return to_route('admin.users.index')->with('flash', [
             'type' => 'success',
-            'message' => 'Usuário removido com sucesso.',
+            'message' => __('User deleted successfully.'),
         ]);
     }
 

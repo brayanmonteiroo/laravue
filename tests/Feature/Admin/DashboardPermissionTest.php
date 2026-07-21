@@ -1,7 +1,7 @@
 <?php
 
+use App\Enums\Permission as PermissionEnum;
 use App\Models\User;
-use Database\Seeders\RolePermissionSeeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -16,7 +16,7 @@ test('usuários autenticados sem dashboard.view não acessam o painel', function
 test('usuários com apenas dashboard.sidebar não acessam o painel', function () {
     $role = Role::create(['name' => 'DashboardMenuOnly', 'guard_name' => 'web']);
     $role->syncPermissions([
-        Permission::findByName(RolePermissionSeeder::PERMISSION_DASHBOARD_SIDEBAR, 'web'),
+        Permission::findByName(PermissionEnum::DashboardSidebar->value, 'web'),
     ]);
 
     $user = User::factory()->withoutRoles()->create();
@@ -30,7 +30,7 @@ test('usuários com apenas dashboard.sidebar não acessam o painel', function ()
 test('usuários com dashboard.view podem acessar o painel', function () {
     $role = Role::create(['name' => 'DashboardViewer', 'guard_name' => 'web']);
     $role->syncPermissions([
-        Permission::findByName(RolePermissionSeeder::PERMISSION_DASHBOARD_VIEW, 'web'),
+        Permission::findByName(PermissionEnum::DashboardView->value, 'web'),
     ]);
 
     $user = User::factory()->withoutRoles()->create();

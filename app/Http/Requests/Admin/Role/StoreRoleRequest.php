@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Admin\Role;
 
-use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Spatie\Permission\Models\Role;
 
 class StoreRoleRequest extends FormRequest
 {
@@ -16,7 +16,7 @@ class StoreRoleRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user()?->can(RolePermissionSeeder::PERMISSION_PERMISSIONS_CREATE) ?? false;
+        return $this->user()?->can('create', Role::class) ?? false;
     }
 
     /**

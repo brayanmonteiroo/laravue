@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-use Database\Seeders\RolePermissionSeeder;
+use App\Enums\Permission;
 
 class PermissionCatalog
 {
@@ -15,17 +15,7 @@ class PermissionCatalog
      */
     public static function allPermissionNames(): array
     {
-        $names = [];
-
-        foreach (self::grouped() as $group) {
-            foreach ($group['sections'] as $section) {
-                foreach ($section['permissions'] as $permission) {
-                    $names[] = $permission;
-                }
-            }
-        }
-
-        return $names;
+        return Permission::values();
     }
 
     /**
@@ -41,47 +31,47 @@ class PermissionCatalog
     {
         return [
             [
-                'label' => 'Menu',
-                'description' => 'Itens exibidos no grupo principal do menu.',
+                'label' => __('Permission group: Menu'),
+                'description' => __('Permission group description: Menu'),
                 'sections' => [
                     [
-                        'label' => 'Painel',
+                        'label' => __('Permission section: Dashboard'),
                         'permissions' => [
-                            RolePermissionSeeder::PERMISSION_DASHBOARD_SIDEBAR,
-                            RolePermissionSeeder::PERMISSION_DASHBOARD_VIEW,
+                            Permission::DashboardSidebar->value,
+                            Permission::DashboardView->value,
                         ],
                     ],
                 ],
             ],
             [
-                'label' => 'Configurações',
-                'description' => 'Itens e ações do grupo Configurações da sidebar.',
+                'label' => __('Permission group: Settings'),
+                'description' => __('Permission group description: Settings'),
                 'sections' => [
                     [
-                        'label' => 'Usuários',
+                        'label' => __('Permission section: Users'),
                         'permissions' => [
-                            RolePermissionSeeder::PERMISSION_USERS_SIDEBAR,
-                            RolePermissionSeeder::PERMISSION_USERS_VIEW,
-                            RolePermissionSeeder::PERMISSION_USERS_SHOW,
-                            RolePermissionSeeder::PERMISSION_USERS_CREATE,
-                            RolePermissionSeeder::PERMISSION_USERS_UPDATE,
-                            RolePermissionSeeder::PERMISSION_USERS_DELETE,
+                            Permission::UsersSidebar->value,
+                            Permission::UsersView->value,
+                            Permission::UsersShow->value,
+                            Permission::UsersCreate->value,
+                            Permission::UsersUpdate->value,
+                            Permission::UsersDelete->value,
                         ],
                     ],
                     [
-                        'label' => 'Permissões',
+                        'label' => __('Permission section: Permissions'),
                         'permissions' => [
-                            RolePermissionSeeder::PERMISSION_PERMISSIONS_SIDEBAR,
-                            RolePermissionSeeder::PERMISSION_PERMISSIONS_VIEW,
-                            RolePermissionSeeder::PERMISSION_PERMISSIONS_CREATE,
-                            RolePermissionSeeder::PERMISSION_PERMISSIONS_UPDATE,
+                            Permission::PermissionsSidebar->value,
+                            Permission::PermissionsView->value,
+                            Permission::PermissionsCreate->value,
+                            Permission::PermissionsUpdate->value,
                         ],
                     ],
                     [
-                        'label' => 'Auditoria',
+                        'label' => __('Permission section: Audits'),
                         'permissions' => [
-                            RolePermissionSeeder::PERMISSION_AUDITS_SIDEBAR,
-                            RolePermissionSeeder::PERMISSION_AUDITS_VIEW,
+                            Permission::AuditsSidebar->value,
+                            Permission::AuditsView->value,
                         ],
                     ],
                 ],

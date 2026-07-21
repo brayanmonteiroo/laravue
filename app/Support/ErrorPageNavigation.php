@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Support;
 
-use Database\Seeders\RolePermissionSeeder;
+use App\Enums\Permission;
 use Illuminate\Contracts\Auth\Access\Authorizable;
 use Illuminate\Contracts\Auth\Authenticatable;
 
@@ -37,31 +39,31 @@ class ErrorPageNavigation
     /**
      * Destinos seguros para CTAs de páginas de erro (sem loop 403).
      *
-     * @return list<array{permission: string, url: callable(): string, label: callable(): string, crumb: callable(): string}>
+     * @return list<array{permission: Permission, url: callable(): string, label: callable(): string, crumb: callable(): string}>
      */
     protected static function adminDestinations(): array
     {
         return [
             [
-                'permission' => RolePermissionSeeder::PERMISSION_DASHBOARD_VIEW,
+                'permission' => Permission::DashboardView,
                 'url' => fn (): string => route('admin.dashboard'),
                 'label' => fn (): string => __('Back to dashboard'),
                 'crumb' => fn (): string => __('Error crumb: Dashboard'),
             ],
             [
-                'permission' => RolePermissionSeeder::PERMISSION_USERS_VIEW,
+                'permission' => Permission::UsersView,
                 'url' => fn (): string => route('admin.users.index'),
                 'label' => fn (): string => __('Go to users'),
                 'crumb' => fn (): string => __('Error crumb: Users'),
             ],
             [
-                'permission' => RolePermissionSeeder::PERMISSION_PERMISSIONS_VIEW,
+                'permission' => Permission::PermissionsView,
                 'url' => fn (): string => route('admin.roles.index'),
                 'label' => fn (): string => __('Go to roles'),
                 'crumb' => fn (): string => __('Error crumb: Roles'),
             ],
             [
-                'permission' => RolePermissionSeeder::PERMISSION_AUDITS_VIEW,
+                'permission' => Permission::AuditsView,
                 'url' => fn (): string => route('admin.audits.index'),
                 'label' => fn (): string => __('Go to audits'),
                 'crumb' => fn (): string => __('Error crumb: Audits'),
@@ -71,8 +73,6 @@ class ErrorPageNavigation
 
     /**
      * Mensagem padrão para o status do erro.
-     * @param int $status
-     * @return string
      */
     public static function defaultMessage(int $status): string
     {

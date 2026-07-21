@@ -11,7 +11,6 @@ use App\Services\Audit\AuditRecorder;
 use App\Support\PermissionCatalog;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\Permission\Models\Role;
@@ -21,12 +20,9 @@ class RolePermissionController extends Controller
     /**
      * Matriz de permissões de um perfil.
      */
-    public function edit(Request $request, Role $role): Response
+    public function edit(Role $role): Response
     {
-        abort_unless(
-            $request->user()?->can(RolePermissionSeeder::PERMISSION_PERMISSIONS_VIEW) ?? false,
-            403,
-        );
+        $this->authorize('view', $role);
 
         abort_unless($role->guard_name === 'web', 404);
 
@@ -79,7 +75,7 @@ class RolePermissionController extends Controller
 
         return to_route('admin.roles.permissions.edit', $role)->with('flash', [
             'type' => 'success',
-            'message' => 'Permissões do perfil atualizadas com sucesso.',
+            'message' => __('Role permissions updated successfully.'),
         ]);
     }
 }
