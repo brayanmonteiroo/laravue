@@ -220,7 +220,7 @@ test('tela de permissões exibe grupos alinhados ao menu lateral', function () {
         ->assertOk()
         ->assertInertia(fn ($page) => $page
             ->component('admin/roles/Permissions')
-            ->has('permissionGroups', 2)
+            ->has('permissionGroups', 3)
             ->where('permissionGroups.0.label', __('Permission group: Menu'))
             ->where('permissionGroups.0.sections.0.label', __('Permission section: Dashboard'))
             ->where('permissionGroups.0.sections.0.permissions', [
@@ -231,6 +231,11 @@ test('tela de permissões exibe grupos alinhados ao menu lateral', function () {
             ->where('permissionGroups.1.sections.0.label', __('Permission section: Users'))
             ->where('permissionGroups.1.sections.1.label', __('Permission section: Permissions'))
             ->where('permissionGroups.1.sections.2.label', __('Permission section: Audits'))
+            ->where('permissionGroups.2.label', __('Permission group: System'))
+            ->where('permissionGroups.2.sections.0.label', __('Permission section: Horizon'))
+            ->where('permissionGroups.2.sections.0.permissions', [
+                'horizon.view',
+            ])
         );
 });
 

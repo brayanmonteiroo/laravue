@@ -12,6 +12,7 @@ class AuditPresenter
 {
     /**
      * Apresenta os dados de um audit.
+     *
      * @return array{
      *     id: int,
      *     occurred_at: string|null,
@@ -32,10 +33,9 @@ class AuditPresenter
             'details' => $this->detailsLabel($audit),
         ];
     }
+
     /**
      * Apresenta a ação de um audit.
-     * @param string $event
-     * @return string
      */
     private function actionLabel(string $event): string
     {
@@ -50,8 +50,6 @@ class AuditPresenter
 
     /**
      * Apresenta o assunto de um audit.
-     * @param Audit $audit
-     * @return string
      */
     private function subjectLabel(Audit $audit): string
     {
@@ -64,8 +62,6 @@ class AuditPresenter
 
     /**
      * Resolve o nome do usuário do assunto de um audit.
-     * @param Audit $audit
-     * @return string
      */
     private function resolveUserSubjectName(Audit $audit): string
     {
@@ -82,8 +78,6 @@ class AuditPresenter
 
     /**
      * Resolve o nome do perfil do assunto de um audit.
-     * @param Audit $audit
-     * @return string
      */
     private function resolveRoleSubjectName(Audit $audit): string
     {
@@ -104,7 +98,7 @@ class AuditPresenter
 
     /**
      * Apresenta os detalhes de um audit.
-     * @param Audit $audit
+     *
      * @return list<string>
      */
     private function detailsLabel(Audit $audit): string
@@ -158,10 +152,6 @@ class AuditPresenter
 
     /**
      * Formata uma alteração escalar.
-     * @param string $label
-     * @param mixed $old
-     * @param mixed $new
-     * @return string
      */
     private function formatScalarChange(string $label, mixed $old, mixed $new): string
     {
@@ -178,9 +168,6 @@ class AuditPresenter
 
     /**
      * Formata uma alteração de permissões.
-     * @param mixed $old
-     * @param mixed $new
-     * @return string
      */
     private function formatPermissionChange(mixed $old, mixed $new): string
     {
@@ -214,9 +201,6 @@ class AuditPresenter
 
     /**
      * Formata uma alteração de perfis.
-     * @param mixed $old
-     * @param mixed $new
-     * @return string
      */
     private function formatRoleChange(mixed $old, mixed $new): string
     {
@@ -228,7 +212,7 @@ class AuditPresenter
 
     /**
      * Normaliza uma lista de strings.
-     * @param mixed $value
+     *
      * @return list<string>
      */
     private function normalizeStringList(mixed $value): array
@@ -245,8 +229,6 @@ class AuditPresenter
 
     /**
      * Converte um valor para uma string.
-     * @param mixed $value
-     * @return string
      */
     private function stringify(mixed $value): string
     {
@@ -267,8 +249,6 @@ class AuditPresenter
 
     /**
      * Apresenta o label de um campo.
-     * @param string $attribute
-     * @return string
      */
     private function fieldLabel(string $attribute): string
     {
@@ -281,8 +261,6 @@ class AuditPresenter
 
     /**
      * Apresenta o label de um perfil.
-     * @param string $name
-     * @return string
      */
     private function roleLabel(string $name): string
     {
@@ -295,8 +273,6 @@ class AuditPresenter
 
     /**
      * Apresenta o label de uma permissão.
-     * @param string $name
-     * @return string
      */
     private function permissionLabel(string $name): string
     {
@@ -315,6 +291,7 @@ class AuditPresenter
             'permissions.update' => 'Editar permissões dos perfis',
             'audits.sidebar' => 'Exibir auditoria na sidebar',
             'audits.view' => 'Visualizar página de auditoria',
+            'horizon.view' => 'Visualizar página do Horizon',
             default => $name,
         };
     }

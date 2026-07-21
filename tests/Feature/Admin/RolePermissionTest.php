@@ -39,7 +39,7 @@ test('administrador pode visualizar e sincronizar permissões de um perfil', fun
         ->assertInertia(fn ($page) => $page
             ->component('admin/roles/Permissions')
             ->where('role.name', 'Editor')
-            ->has('permissionGroups', 2)
+            ->has('permissionGroups', 3)
             ->has('role.permissions')
         );
 

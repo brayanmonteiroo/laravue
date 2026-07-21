@@ -26,6 +26,7 @@ export function permissionLabel(name: string): string {
         'permissions.update': 'Editar permissões dos perfis',
         'audits.sidebar': 'Exibir auditoria na sidebar',
         'audits.view': 'Visualizar página de auditoria',
+        'horizon.view': 'Visualizar página do Horizon',
     };
 
     return map[name] ?? name;

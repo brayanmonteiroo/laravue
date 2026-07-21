@@ -24,6 +24,8 @@ enum Permission: string
     case AuditsSidebar = 'audits.sidebar';
     case AuditsView = 'audits.view';
 
+    case HorizonView = 'horizon.view';
+
     /**
      * @return list<string>
      */

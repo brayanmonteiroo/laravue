@@ -3,6 +3,7 @@ import { initializeTheme } from '@/composables/useAppearance';
 import AdminLayout from '@/layouts/admin/Layout.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
+import ErrorLayout from '@/layouts/ErrorLayout.vue';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravue';
 
@@ -10,6 +11,8 @@ createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
     layout: (name) => {
         switch (true) {
+            case name.startsWith('errors/'):
+                return ErrorLayout;
             case name.startsWith('auth/'):
                 return AuthLayout;
             case name.startsWith('admin/'):

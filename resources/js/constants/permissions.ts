@@ -13,4 +13,5 @@ export const PERMISSIONS = {
     permissionsUpdate: 'permissions.update',
     auditsSidebar: 'audits.sidebar',
     auditsView: 'audits.view',
+    horizonView: 'horizon.view',
 } as const;

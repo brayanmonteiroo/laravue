@@ -16,6 +16,33 @@ test('página 404 pública aponta para a home externa', function () {
     $response->assertSee(config('app.name'), false);
 });
 
+test('POST em URI órfã retorna 404 e não 405', function () {
+    $this->post('/rota-inexistente-para-teste-de-erro-404')
+        ->assertNotFound();
+});
+
+test('visita Inertia 404 autenticada mantém auth.user e permissions', function () {
+    $user = User::factory()->administrator()->create();
+    $inertiaVersion = is_file(public_path('build/manifest.json'))
+        ? hash_file('xxh128', public_path('build/manifest.json'))
+        : '';
+
+    $this->actingAs($user)
+        ->withHeaders([
+            'X-Inertia' => 'true',
+            'X-Inertia-Version' => $inertiaVersion,
+            'X-Requested-With' => 'XMLHttpRequest',
+        ])
+        ->get('/admin/rota-inexistente-para-teste-de-erro-404')
+        ->assertNotFound()
+        ->assertHeader('X-Inertia', 'true')
+        ->assertJsonPath('component', 'errors/Error')
+        ->assertJsonPath('props.status', 404)
+        ->assertJsonPath('props.auth.user.id', $user->id)
+        ->assertJsonPath('props.ctaUrl', route('admin.dashboard'))
+        ->assertJsonPath('props.ctaLabel', 'Voltar ao painel');
+});
+
 test('visitante em 404 no admin volta para a home pública', function () {
     $this->get('/admin/rota-inexistente-para-teste-de-erro-404')
         ->assertNotFound()

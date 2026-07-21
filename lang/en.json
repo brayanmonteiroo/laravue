@@ -14,8 +14,11 @@
   "Permission group description: Menu": "Items shown in the main menu group.",
   "Permission group: Settings": "Settings",
   "Permission group description: Settings": "Items and actions in the Settings sidebar group.",
+  "Permission group: System": "System",
+  "Permission group description: System": "System operations tools and dashboards.",
   "Permission section: Dashboard": "Dashboard",
   "Permission section: Users": "Users",
   "Permission section: Permissions": "Permissions",
-  "Permission section: Audits": "Audits"
+  "Permission section: Audits": "Audits",
+  "Permission section: Horizon": "Horizon"
 }

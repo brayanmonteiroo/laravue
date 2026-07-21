@@ -76,6 +76,18 @@ class PermissionCatalog
                     ],
                 ],
             ],
+            [
+                'label' => __('Permission group: System'),
+                'description' => __('Permission group description: System'),
+                'sections' => [
+                    [
+                        'label' => __('Permission section: Horizon'),
+                        'permissions' => [
+                            Permission::HorizonView->value,
+                        ],
+                    ],
+                ],
+            ],
         ];
     }
 }

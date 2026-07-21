@@ -228,8 +228,11 @@
   "Permission group description: Menu": "Itens exibidos no grupo principal do menu.",
   "Permission group: Settings": "Configurações",
   "Permission group description: Settings": "Itens e ações do grupo Configurações da sidebar.",
+  "Permission group: System": "Sistema",
+  "Permission group description: System": "Ferramentas e painéis de operação do sistema.",
   "Permission section: Dashboard": "Painel",
   "Permission section: Users": "Usuários",
   "Permission section: Permissions": "Permissões",
-  "Permission section: Audits": "Auditoria"
+  "Permission section: Audits": "Auditoria",
+  "Permission section: Horizon": "Horizon"
 }

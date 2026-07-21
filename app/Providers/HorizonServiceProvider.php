@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
-use App\Enums\Role as RoleEnum;
+use App\Enums\Permission;
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 use Laravel\Horizon\Horizon;
@@ -27,12 +27,12 @@ class HorizonServiceProvider extends HorizonApplicationServiceProvider
     /**
      * Define o gate do Horizon.
      *
-     * Este gate determina quem pode acessar o Horizon em ambientes não locais.
+     * Este gate determina quem pode acessar o Horizon (permissão Spatie horizon.view).
      */
     protected function gate(): void
     {
         Gate::define('viewHorizon', function (?User $user): bool {
-            return $user !== null && $user->hasRole(RoleEnum::Administrator);
+            return $user !== null && $user->can(Permission::HorizonView);
         });
     }
 }
