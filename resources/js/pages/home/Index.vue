@@ -30,18 +30,15 @@ defineOptions({
 const mockDestaques = [
     {
         titulo: 'Campanha de vacinação 2026',
-        resumo:
-            'Cronograma e locais divulgados pela coordenação de saúde ocupacional.',
+        resumo: 'Cronograma e locais divulgados pela coordenação de saúde ocupacional.',
     },
     {
         titulo: 'Novo portal de formulários',
-        resumo:
-            'Atualização prevista para o fim do mês; equipes serão avisadas por e-mail.',
+        resumo: 'Atualização prevista para o fim do mês; equipes serão avisadas por e-mail.',
     },
     {
         titulo: 'Treinamento obrigatório LGPD',
-        resumo:
-            'Módulo online disponível no ambiente de capacitação (conteúdo de exemplo).',
+        resumo: 'Módulo online disponível no ambiente de capacitação (conteúdo de exemplo).',
     },
 ] as const;
 
@@ -93,7 +90,7 @@ const mockDocumentos = [
         <main class="mx-auto max-w-6xl space-y-12 px-4 py-10 sm:px-6">
             <div class="space-y-3">
                 <p
-                    class="text-muted-foreground inline-flex items-center gap-2 text-sm font-medium"
+                    class="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground"
                 >
                     <Newspaper class="size-4" aria-hidden="true" />
                     Conteúdo institucional
@@ -102,13 +99,16 @@ const mockDocumentos = [
                     Bem-vindo
                 </h1>
                 <p class="max-w-2xl text-muted-foreground">
-                    Esta página simula o que virá de um CMS: comunicados, arquivos
-                    e agenda. O mesmo conteúdo é exibido para todos os visitantes.
+                    Esta página simula o que virá de um CMS: comunicados,
+                    arquivos e agenda. O mesmo conteúdo é exibido para todos os
+                    visitantes.
                 </p>
             </div>
 
             <section class="space-y-4">
-                <h2 class="text-lg font-semibold tracking-tight">Em destaque</h2>
+                <h2 class="text-lg font-semibold tracking-tight">
+                    Em destaque
+                </h2>
                 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     <Card
                         v-for="(item, i) in mockDestaques"
@@ -163,10 +163,16 @@ const mockDocumentos = [
                     <Card>
                         <CardHeader>
                             <div class="flex items-center gap-2">
-                                <FileText class="size-5 text-muted-foreground" />
-                                <CardTitle class="text-lg">Documentos</CardTitle>
+                                <FileText
+                                    class="size-5 text-muted-foreground"
+                                />
+                                <CardTitle class="text-lg"
+                                    >Documentos</CardTitle
+                                >
                             </div>
-                            <CardDescription>Últimos arquivos (mock)</CardDescription>
+                            <CardDescription
+                                >Últimos arquivos (mock)</CardDescription
+                            >
                         </CardHeader>
                         <CardContent class="space-y-2 text-sm">
                             <div
@@ -186,11 +192,15 @@ const mockDocumentos = [
                     <Card>
                         <CardHeader>
                             <div class="flex items-center gap-2">
-                                <Calendar class="size-5 text-muted-foreground" />
+                                <Calendar
+                                    class="size-5 text-muted-foreground"
+                                />
                                 <CardTitle class="text-lg">Agenda</CardTitle>
                             </div>
                         </CardHeader>
-                        <CardContent class="space-y-3 text-sm text-muted-foreground">
+                        <CardContent
+                            class="space-y-3 text-sm text-muted-foreground"
+                        >
                             <p>Nenhum evento público nesta visualização.</p>
                             <p class="text-xs">
                                 Eventos poderão ser sincronizados aqui após

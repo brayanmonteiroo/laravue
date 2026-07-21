@@ -165,9 +165,7 @@ function rowAsUser(row: Record<string, unknown>): UserRow {
     <ConfirmDialog
         v-model:open="deleteOpen"
         :title="
-            userToDelete
-                ? `Excluir ${userToDelete.name}?`
-                : 'Excluir usuário?'
+            userToDelete ? `Excluir ${userToDelete.name}?` : 'Excluir usuário?'
         "
         description="Esta ação não pode ser desfeita. O usuário será removido permanentemente."
         confirm-text="Excluir"

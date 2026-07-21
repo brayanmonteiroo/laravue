@@ -56,7 +56,7 @@ type Props = {
 
 const page = usePage<Props>();
 
-const props = defineProps<Props>();
+defineProps<Props>();
 
 const authPermissions = computed(() => page.props.auth.permissions ?? []);
 
@@ -206,8 +206,8 @@ function rowAsRole(row: Record<string, unknown>): RoleRow {
                     <DialogHeader>
                         <DialogTitle>Novo perfil</DialogTitle>
                         <DialogDescription>
-                            O nome interno é em inglês (ex.: Editor). Depois você
-                            pode atribuir permissões a este perfil.
+                            O nome interno é em inglês (ex.: Editor). Depois
+                            você pode atribuir permissões a este perfil.
                         </DialogDescription>
                     </DialogHeader>
                     <Form

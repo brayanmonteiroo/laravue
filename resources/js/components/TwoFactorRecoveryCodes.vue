@@ -115,8 +115,8 @@ onMounted(async () => {
                         </div>
                     </div>
                     <p class="text-xs text-muted-foreground select-none">
-                        Cada código pode ser usado uma vez para acessar a conta e
-                        será invalidado após o uso. Para gerar novos, use
+                        Cada código pode ser usado uma vez para acessar a conta
+                        e será invalidado após o uso. Para gerar novos, use
                         <span class="font-bold">Gerar novos códigos</span>
                         acima.
                     </p>

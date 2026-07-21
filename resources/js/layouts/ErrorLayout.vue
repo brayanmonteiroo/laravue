@@ -2,7 +2,7 @@
 
 <template>
     <div
-        class="bg-background text-foreground flex min-h-svh flex-col items-center justify-center"
+        class="flex min-h-svh flex-col items-center justify-center bg-background text-foreground"
     >
         <slot />
     </div>

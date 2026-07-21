@@ -5,11 +5,7 @@ import { computed, reactive, ref, watch } from 'vue';
 import DatePickerField from '@/components/tables/DatePickerField.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardHeader,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import {
     Collapsible,
     CollapsibleContent,
@@ -62,12 +58,13 @@ watch(
     { deep: true },
 );
 
-const activeFilterCount = computed(() =>
-    props.fields.filter((field) => {
-        const value = props.filters[field.key] ?? '';
+const activeFilterCount = computed(
+    () =>
+        props.fields.filter((field) => {
+            const value = props.filters[field.key] ?? '';
 
-        return value !== '' && value !== 'all';
-    }).length,
+            return value !== '' && value !== 'all';
+        }).length,
 );
 
 const hasActiveFilters = computed(() => activeFilterCount.value > 0);
@@ -128,7 +125,7 @@ function onSelectUpdate(key: string, value: unknown): void {
                 >
                     <div class="flex min-w-0 items-center gap-2">
                         <Filter
-                            class="text-muted-foreground size-4 shrink-0"
+                            class="size-4 shrink-0 text-muted-foreground"
                             aria-hidden="true"
                         />
                         <span class="text-sm font-medium">Filtros</span>
@@ -141,13 +138,13 @@ function onSelectUpdate(key: string, value: unknown): void {
                         </Badge>
                         <span
                             v-else
-                            class="text-muted-foreground truncate text-xs"
+                            class="truncate text-xs text-muted-foreground"
                         >
                             Recolhido — expandir para filtrar
                         </span>
                     </div>
                     <ChevronDown
-                        class="text-muted-foreground size-4 shrink-0 transition-transform duration-200"
+                        class="size-4 shrink-0 text-muted-foreground transition-transform duration-200"
                         :class="{ 'rotate-180': open }"
                         aria-hidden="true"
                     />

@@ -62,10 +62,7 @@ function onCancel(): void {
                 <AlertDialogCancel @click="onCancel">
                     {{ cancelText }}
                 </AlertDialogCancel>
-                <AlertDialogAction
-                    :variant="confirmVariant"
-                    @click="onConfirm"
-                >
+                <AlertDialogAction :variant="confirmVariant" @click="onConfirm">
                     {{ confirmText }}
                 </AlertDialogAction>
             </AlertDialogFooter>

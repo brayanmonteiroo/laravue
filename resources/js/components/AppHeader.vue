@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { History, LayoutGrid, Menu, Search, Shield, Users } from 'lucide-vue-next';
+import {
+    History,
+    LayoutGrid,
+    Menu,
+    Search,
+    Shield,
+    Users,
+} from 'lucide-vue-next';
 import { computed } from 'vue';
 import AppearanceHeaderControls from '@/components/AppearanceHeaderControls.vue';
 import AppLogo from '@/components/AppLogo.vue';
@@ -31,8 +38,8 @@ import { useCurrentUrl } from '@/composables/useCurrentUrl';
 import { getInitials } from '@/composables/useInitials';
 import { PERMISSIONS } from '@/constants/permissions';
 import { home } from '@/routes';
-import { index as auditsIndex } from '@/routes/admin/audits';
 import { dashboard } from '@/routes/admin';
+import { index as auditsIndex } from '@/routes/admin/audits';
 import { index as rolesIndex } from '@/routes/admin/roles';
 import { index as usersIndex } from '@/routes/admin/users';
 import type { BreadcrumbItem, NavGroup } from '@/types';
@@ -65,7 +72,9 @@ const showDashboardInMenu = computed(() =>
 );
 
 const logoHref = computed(() =>
-    permissions.value.includes(PERMISSIONS.dashboardView) ? dashboard() : home(),
+    permissions.value.includes(PERMISSIONS.dashboardView)
+        ? dashboard()
+        : home(),
 );
 
 const navGroups = computed((): NavGroup[] => {
@@ -111,9 +120,7 @@ const navGroups = computed((): NavGroup[] => {
     ];
 });
 
-const desktopNavItems = computed(() =>
-    navGroups.value.flatMap((g) => g.items),
-);
+const desktopNavItems = computed(() => navGroups.value.flatMap((g) => g.items));
 </script>
 
 <template>

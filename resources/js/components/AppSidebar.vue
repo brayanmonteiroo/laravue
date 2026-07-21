@@ -16,8 +16,8 @@ import {
 } from '@/components/ui/sidebar';
 import { PERMISSIONS } from '@/constants/permissions';
 import { home } from '@/routes';
-import { index as auditsIndex } from '@/routes/admin/audits';
 import { dashboard } from '@/routes/admin';
+import { index as auditsIndex } from '@/routes/admin/audits';
 import { index as rolesIndex } from '@/routes/admin/roles';
 import { index as usersIndex } from '@/routes/admin/users';
 import type { NavGroup } from '@/types';
@@ -30,7 +30,9 @@ const showDashboardInMenu = computed(() =>
 );
 
 const logoHref = computed(() =>
-    permissions.value.includes(PERMISSIONS.dashboardView) ? dashboard() : home(),
+    permissions.value.includes(PERMISSIONS.dashboardView)
+        ? dashboard()
+        : home(),
 );
 
 const navGroups = computed((): NavGroup[] => {

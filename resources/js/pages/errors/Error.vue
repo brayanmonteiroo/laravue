@@ -23,7 +23,7 @@ const title = computed(() => String(props.status));
         class="flex w-full flex-col items-center justify-center px-4 py-16 text-center"
     >
         <p
-            class="text-muted-foreground mb-2 text-sm font-medium tracking-wider"
+            class="mb-2 text-sm font-medium tracking-wider text-muted-foreground"
         >
             {{ status }}
         </p>

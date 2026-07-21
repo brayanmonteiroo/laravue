@@ -87,7 +87,6 @@ watchEffect(() => {
     });
 });
 
-
 function sectionPermissions(section: PermissionSection): string[] {
     return section.permissions;
 }
@@ -144,7 +143,10 @@ function toggleLabel(perms: string[]): string {
     return areAllEnabled(perms) ? 'Desmarcar todas' : 'Marcar todas';
 }
 
-function onCheckboxUpdate(perm: string, value: boolean | 'indeterminate'): void {
+function onCheckboxUpdate(
+    perm: string,
+    value: boolean | 'indeterminate',
+): void {
     setPerm(perm, value === true);
 }
 
@@ -253,9 +255,7 @@ function sectionIcon(label: string): Component {
                                             enabledCount(
                                                 groupPermissions(group),
                                             )
-                                        }}/{{
-                                            groupPermissions(group).length
-                                        }}
+                                        }}/{{ groupPermissions(group).length }}
                                     </span>
                                 </div>
                                 <p
@@ -272,9 +272,7 @@ function sectionIcon(label: string): Component {
                             variant="ghost"
                             size="sm"
                             class="w-full shrink-0 sm:w-auto"
-                            @click="
-                                togglePermissions(groupPermissions(group))
-                            "
+                            @click="togglePermissions(groupPermissions(group))"
                         >
                             {{ toggleLabel(groupPermissions(group)) }}
                         </Button>
@@ -292,7 +290,9 @@ function sectionIcon(label: string): Component {
                                 <div
                                     class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between"
                                 >
-                                    <div class="flex min-w-0 items-center gap-2">
+                                    <div
+                                        class="flex min-w-0 items-center gap-2"
+                                    >
                                         <component
                                             :is="sectionIcon(section.label)"
                                             class="size-3.5 shrink-0 text-muted-foreground"
@@ -305,9 +305,7 @@ function sectionIcon(label: string): Component {
                                         >
                                             {{
                                                 enabledCount(
-                                                    sectionPermissions(
-                                                        section,
-                                                    ),
+                                                    sectionPermissions(section),
                                                 )
                                             }}/{{
                                                 sectionPermissions(section)
@@ -381,10 +379,7 @@ function sectionIcon(label: string): Component {
 
             <InputError :message="syncForm.errors.permissions" />
 
-            <div
-                v-if="canUpdatePermissions"
-                class="flex justify-end"
-            >
+            <div v-if="canUpdatePermissions" class="flex justify-end">
                 <Button
                     type="submit"
                     class="w-full sm:w-auto"

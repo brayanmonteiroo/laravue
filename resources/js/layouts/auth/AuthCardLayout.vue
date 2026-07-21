@@ -20,7 +20,7 @@ defineProps<{
 <template>
     <Toaster />
     <div
-        class="bg-neutral-50 dark:bg-neutral-900 flex min-h-svh flex-col items-center justify-center p-4 sm:p-6 md:p-10"
+        class="flex min-h-svh flex-col items-center justify-center bg-neutral-50 p-4 sm:p-6 md:p-10 dark:bg-neutral-900"
     >
         <div class="flex w-full max-w-md flex-col gap-6">
             <Link
@@ -36,7 +36,7 @@ defineProps<{
             </Link>
 
             <Card
-                class="bg-background w-full rounded-xl border shadow-md dark:shadow-lg dark:ring-1 dark:ring-white/10"
+                class="w-full rounded-xl border bg-background shadow-md dark:shadow-lg dark:ring-1 dark:ring-white/10"
             >
                 <CardHeader class="px-4 pt-6 pb-0 text-center sm:px-8 sm:pt-8">
                     <CardTitle class="text-xl">{{ title }}</CardTitle>

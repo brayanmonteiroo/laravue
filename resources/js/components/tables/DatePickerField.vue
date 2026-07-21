@@ -217,7 +217,7 @@ function onCalendarSelect(value: DateValue | undefined): void {
                     type="button"
                     variant="outline"
                     size="icon"
-                    class="rounded-l-none border-l-0 shrink-0"
+                    class="shrink-0 rounded-l-none border-l-0"
                     :aria-label="placeholder ?? 'Abrir calendário'"
                 >
                     <CalendarIcon class="size-4" />

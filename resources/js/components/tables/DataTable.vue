@@ -1,10 +1,6 @@
 <script setup lang="ts">
 import { router } from '@inertiajs/vue3';
-import {
-    ArrowDown,
-    ArrowUp,
-    ArrowUpDown,
-} from 'lucide-vue-next';
+import { ArrowDown, ArrowUp, ArrowUpDown } from 'lucide-vue-next';
 import { computed } from 'vue';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';

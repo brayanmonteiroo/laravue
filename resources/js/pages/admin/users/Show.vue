@@ -12,10 +12,7 @@ import {
 } from '@/components/ui/card';
 import { roleLabel } from '@/constants/adminUi';
 import { dashboard } from '@/routes/admin';
-import {
-    edit as editRoute,
-    index as indexRoute,
-} from '@/routes/admin/users';
+import { edit as editRoute, index as indexRoute } from '@/routes/admin/users';
 
 type UserShow = {
     id: number;
@@ -43,7 +40,7 @@ defineOptions({
 });
 
 function formatDateTime(iso: string | null): string {
-    if (! iso) {
+    if (!iso) {
         return '—';
     }
 
@@ -66,7 +63,9 @@ function formatRoles(roles: string[]): string {
     <Head :title="`${user.name} · Usuário`" />
 
     <div class="w-full space-y-8">
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div
+            class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"
+        >
             <Heading
                 :title="user.name"
                 description="Visualização somente leitura. Alterações são feitas em Editar."
