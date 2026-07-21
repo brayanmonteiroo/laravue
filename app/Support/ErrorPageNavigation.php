@@ -35,6 +35,8 @@ class ErrorPageNavigation
     }
 
     /**
+     * Destinos seguros para CTAs de páginas de erro (sem loop 403).
+     *
      * @return list<array{permission: string, url: callable(): string, label: callable(): string, crumb: callable(): string}>
      */
     protected static function adminDestinations(): array
@@ -67,6 +69,11 @@ class ErrorPageNavigation
         ];
     }
 
+    /**
+     * Mensagem padrão para o status do erro.
+     * @param int $status
+     * @return string
+     */
     public static function defaultMessage(int $status): string
     {
         return match ($status) {

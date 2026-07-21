@@ -33,7 +33,7 @@ class FortifyServiceProvider extends ServiceProvider
     }
 
     /**
-     * Configure Fortify actions.
+     * Configura as ações do Fortify.
      */
     private function configureActions(): void
     {
@@ -41,7 +41,7 @@ class FortifyServiceProvider extends ServiceProvider
     }
 
     /**
-     * Configure Fortify views.
+     * Configura as views do Fortify.
      */
     private function configureViews(): void
     {
@@ -69,7 +69,8 @@ class FortifyServiceProvider extends ServiceProvider
     }
 
     /**
-     * Configure rate limiting.
+     * Configura o rate limiting.
+     * @return void
      */
     private function configureRateLimiting(): void
     {

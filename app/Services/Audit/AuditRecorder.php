@@ -11,8 +11,12 @@ use OwenIt\Auditing\Models\Audit;
 class AuditRecorder
 {
     /**
-     * @param  array<string, mixed>  $oldValues
-     * @param  array<string, mixed>  $newValues
+     * Registra um audit. 
+     * @param Model $auditable
+     * @param string $event
+     * @param array<string, mixed> $oldValues
+     * @param array<string, mixed> $newValues
+     * @return Audit
      */
     public function record(
         Model $auditable,

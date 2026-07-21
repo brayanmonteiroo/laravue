@@ -11,7 +11,8 @@ use Laravel\Horizon\HorizonApplicationServiceProvider;
 class HorizonServiceProvider extends HorizonApplicationServiceProvider
 {
     /**
-     * Bootstrap any application services.
+     * Inicializa o Horizon.
+     * @return void
      */
     public function boot(): void
     {
@@ -23,9 +24,10 @@ class HorizonServiceProvider extends HorizonApplicationServiceProvider
     }
 
     /**
-     * Register the Horizon gate.
+     * Define o gate do Horizon.
      *
-     * This gate determines who can access Horizon in non-local environments.
+     * Este gate determina quem pode acessar o Horizon em ambientes não locais.
+     * @return void
      */
     protected function gate(): void
     {

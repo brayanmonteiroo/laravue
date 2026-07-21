@@ -20,6 +20,7 @@ class UserController extends Controller
     private const int PER_PAGE = 10;
 
     /**
+     * Colunas ordenáveis.
      * @var list<string>
      */
     private const array SORTABLE = ['name', 'email', 'created_at'];

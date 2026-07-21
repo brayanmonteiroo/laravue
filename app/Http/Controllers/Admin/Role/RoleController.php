@@ -18,6 +18,7 @@ use Spatie\Permission\Models\Role;
 class RoleController extends Controller
 {
     /**
+     * Nomes dos perfis de sistema.
      * @return list<string>
      */
     public static function systemRoleNames(): array
@@ -27,6 +28,11 @@ class RoleController extends Controller
         ];
     }
 
+    /**
+     * Determina se um perfil é de sistema.
+     * @param Role $role
+     * @return bool
+     */
     public static function isSystemRole(Role $role): bool
     {
         return in_array($role->name, self::systemRoleNames(), true);
@@ -34,6 +40,8 @@ class RoleController extends Controller
 
     /**
      * Lista os perfis (roles) do guard web.
+     * @param Request $request
+     * @return Response
      */
     public function index(Request $request): Response
     {
@@ -72,6 +80,9 @@ class RoleController extends Controller
 
     /**
      * Cria um novo perfil sem permissões.
+     * @param StoreRoleRequest $request
+     * @param AuditRecorder $auditRecorder
+     * @return RedirectResponse
      */
     public function store(StoreRoleRequest $request, AuditRecorder $auditRecorder): RedirectResponse
     {
@@ -97,6 +108,10 @@ class RoleController extends Controller
 
     /**
      * Renomeia um perfil (exceto roles de sistema).
+     * @param UpdateRoleRequest $request
+     * @param Role $role
+     * @param AuditRecorder $auditRecorder
+     * @return RedirectResponse
      */
     public function update(UpdateRoleRequest $request, Role $role, AuditRecorder $auditRecorder): RedirectResponse
     {
@@ -132,6 +147,10 @@ class RoleController extends Controller
 
     /**
      * Exclui um perfil (exceto sistema e com usuários vinculados).
+     * @param Request $request
+     * @param Role $role
+     * @param AuditRecorder $auditRecorder
+     * @return RedirectResponse
      */
     public function destroy(Request $request, Role $role, AuditRecorder $auditRecorder): RedirectResponse
     {

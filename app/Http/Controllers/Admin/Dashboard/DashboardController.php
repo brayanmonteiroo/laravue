@@ -12,6 +12,7 @@ class DashboardController extends Controller
 {
     /**
      * Renderiza a página de dashboard.
+     * @return Response
      */
     public function __invoke(): Response
     {

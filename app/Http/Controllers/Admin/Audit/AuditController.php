@@ -18,6 +18,9 @@ class AuditController extends Controller
 
     /**
      * Lista as últimas auditorias do sistema.
+     * @param Request $request
+     * @param AuditPresenter $presenter
+     * @return Response
      */
     public function index(Request $request, AuditPresenter $presenter): Response
     {
