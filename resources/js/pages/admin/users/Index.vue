@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { Head, Link, router } from '@inertiajs/vue3';
 import { Eye, Pencil, Trash2, UserPlus } from 'lucide-vue-next';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import UserController from '@/actions/App/Http/Controllers/Admin/User/UserController';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import Heading from '@/components/Heading.vue';
 import DataTable from '@/components/tables/DataTable.vue';
+import TableFilters from '@/components/tables/TableFilters.vue';
 import { Button } from '@/components/ui/button';
 import { roleLabel } from '@/constants/adminUi';
 import { dashboard } from '@/routes/admin';
@@ -15,7 +16,12 @@ import {
     index as indexRoute,
     show as showRoute,
 } from '@/routes/admin/users';
-import type { DataTableColumn } from '@/types/tables';
+import type {
+    DataTableColumn,
+    LaravelPaginator,
+    TableFilterField,
+    TableFilterOption,
+} from '@/types/tables';
 
 type UserRow = {
     id: number;
@@ -28,21 +34,24 @@ type UserRow = {
 };
 
 type Props = {
-    users: {
-        data: UserRow[];
-        links: { url: string | null; label: string; active: boolean }[];
-        current_page: number;
-        last_page: number;
-        per_page: number;
-        total: number;
-    };
+    users: LaravelPaginator<UserRow>;
     sort: {
         column: string;
         direction: 'asc' | 'desc';
     };
+    filters: {
+        search: string;
+        role: string;
+        verified: string;
+        created_from: string;
+        created_to: string;
+    };
+    filterOptions: {
+        roles: TableFilterOption[];
+    };
 };
 
-defineProps<Props>();
+const props = defineProps<Props>();
 
 const deleteOpen = ref(false);
 const userToDelete = ref<UserRow | null>(null);
@@ -92,6 +101,55 @@ const tableColumns: DataTableColumn[] = [
     },
 ];
 
+const filterFields = computed((): TableFilterField[] => [
+    {
+        key: 'search',
+        label: 'Busca',
+        type: 'text',
+        placeholder: 'Nome ou e-mail',
+    },
+    {
+        key: 'role',
+        label: 'Perfil',
+        type: 'select',
+        options: [
+            { value: 'all', label: 'Todos' },
+            ...props.filterOptions.roles.map((role) => ({
+                value: role.value,
+                label: roleLabel(role.label),
+            })),
+        ],
+    },
+    {
+        key: 'verified',
+        label: 'E-mail verificado',
+        type: 'select',
+        options: [
+            { value: 'all', label: 'Todos' },
+            { value: 'yes', label: 'Verificado' },
+            { value: 'no', label: 'Não verificado' },
+        ],
+    },
+    {
+        key: 'created_from',
+        label: 'Criado a partir de',
+        type: 'date',
+    },
+    {
+        key: 'created_to',
+        label: 'Criado até',
+        type: 'date',
+    },
+]);
+
+const filterValues = computed(() => ({
+    search: props.filters.search,
+    role: props.filters.role === '' ? 'all' : props.filters.role,
+    verified: props.filters.verified,
+    created_from: props.filters.created_from,
+    created_to: props.filters.created_to,
+}));
+
 function formatRoles(roles: string[]): string {
     return roles.map((r) => roleLabel(r)).join(', ');
 }
@@ -119,7 +177,9 @@ function rowAsUser(row: Record<string, unknown>): UserRow {
     />
 
     <div class="space-y-6">
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div
+            class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between"
+        >
             <Heading
                 title="Usuários"
                 description="Contas cadastradas no sistema"
@@ -134,6 +194,16 @@ function rowAsUser(row: Record<string, unknown>): UserRow {
                 </Link>
             </Button>
         </div>
+
+        <TableFilters
+            :index-url="indexRoute.url()"
+            :fields="filterFields"
+            :filters="filterValues"
+            :preserve="{
+                sort: sort.column,
+                direction: sort.direction,
+            }"
+        />
 
         <DataTable
             :columns="tableColumns"

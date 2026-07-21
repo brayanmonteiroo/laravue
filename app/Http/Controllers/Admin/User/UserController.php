@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin\User;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\User\IndexUserRequest;
 use App\Http\Requests\Admin\User\StoreUserRequest;
 use App\Http\Requests\Admin\User\UpdateUserRequest;
 use App\Models\User;
 use App\Services\Audit\AuditRecorder;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\Permission\Models\Role;
@@ -21,34 +20,31 @@ class UserController extends Controller
     private const int PER_PAGE = 10;
 
     /**
-     * Colunas ordenáveis.
-     *
-     * @var list<string>
-     */
-    private const array SORTABLE = ['name', 'email', 'created_at'];
-
-    /**
      * Lista todos os usuários cadastrados no sistema.
      */
-    public function index(Request $request): Response
+    public function index(IndexUserRequest $request): Response
     {
-        // Verifica se o usuário tem permissão para visualizar todos os usuários.
-        $this->authorize('viewAny', User::class);
+        $filters = $request->filters();
+        $sort = $filters['sort'];
+        $direction = $filters['direction'];
 
-        // Valida os parâmetros de ordenação.
-        $validated = $request->validate([
-            'sort' => ['sometimes', 'nullable', Rule::in(self::SORTABLE)],
-            'direction' => ['sometimes', 'nullable', Rule::in(['asc', 'desc'])],
-        ]);
-
-        // Define os parâmetros de ordenação padrão.
-        $sort = $validated['sort'] ?? 'name';
-        $direction = $validated['direction'] ?? 'asc';
-
-        // Busca todos os usuários cadastrados no sistema.
         $users = User::query()
             ->with('roles:id,name')
             ->select(['id', 'name', 'email', 'email_verified_at', 'created_at'])
+            ->when($filters['search'] !== '', function ($query) use ($filters): void {
+                $term = '%'.$filters['search'].'%';
+                $query->where(function ($inner) use ($term): void {
+                    $inner->where('name', 'like', $term)
+                        ->orWhere('email', 'like', $term);
+                });
+            })
+            ->when($filters['role'] !== '', function ($query) use ($filters): void {
+                $query->whereHas('roles', fn ($roles) => $roles->where('name', $filters['role']));
+            })
+            ->when($filters['verified'] === 'yes', fn ($query) => $query->whereNotNull('email_verified_at'))
+            ->when($filters['verified'] === 'no', fn ($query) => $query->whereNull('email_verified_at'))
+            ->when($filters['created_from'] !== '', fn ($query) => $query->whereDate('created_at', '>=', $filters['created_from']))
+            ->when($filters['created_to'] !== '', fn ($query) => $query->whereDate('created_at', '<=', $filters['created_to']))
             ->orderBy($sort, $direction)
             ->orderBy('id')
             ->paginate(self::PER_PAGE)
@@ -63,12 +59,27 @@ class UserController extends Controller
                 'can_delete' => $request->user()?->getKey() !== $user->getKey(),
             ]);
 
-        // Renderiza a view de listagem de usuários.
         return Inertia::render('admin/users/Index', [
             'users' => $users,
             'sort' => [
                 'column' => $sort,
                 'direction' => $direction,
+            ],
+            'filters' => [
+                'search' => $filters['search'],
+                'role' => $filters['role'],
+                'verified' => $filters['verified'],
+                'created_from' => $filters['created_from'],
+                'created_to' => $filters['created_to'],
+            ],
+            'filterOptions' => [
+                'roles' => collect($this->availableRoles())
+                    ->map(fn (array $role): array => [
+                        'value' => $role['name'],
+                        'label' => $role['name'],
+                    ])
+                    ->values()
+                    ->all(),
             ],
         ]);
     }

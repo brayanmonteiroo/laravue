@@ -6,6 +6,8 @@ import RoleController from '@/actions/App/Http/Controllers/Admin/Role/RoleContro
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import Heading from '@/components/Heading.vue';
 import InputError from '@/components/InputError.vue';
+import DataTable from '@/components/tables/DataTable.vue';
+import TableFilters from '@/components/tables/TableFilters.vue';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -23,6 +25,11 @@ import { PERMISSIONS } from '@/constants/permissions';
 import { dashboard } from '@/routes/admin';
 import { index as rolesIndex } from '@/routes/admin/roles';
 import { edit as rolePermissionsEdit } from '@/routes/admin/roles/permissions';
+import type {
+    DataTableColumn,
+    LaravelPaginator,
+    TableFilterField,
+} from '@/types/tables';
 
 type RoleRow = {
     id: number;
@@ -35,12 +42,22 @@ type RoleRow = {
 };
 
 type Props = {
-    roles: RoleRow[];
+    roles: LaravelPaginator<RoleRow>;
+    sort: {
+        column: string;
+        direction: 'asc' | 'desc';
+    };
+    filters: {
+        search: string;
+        system: string;
+        has_users: string;
+    };
 };
 
 const page = usePage<Props>();
 
-const roles = computed(() => page.props.roles);
+const props = defineProps<Props>();
+
 const authPermissions = computed(() => page.props.auth.permissions ?? []);
 
 const canCreate = computed(() =>
@@ -60,13 +77,13 @@ const deleteOpen = ref(false);
 const roleToDelete = ref<RoleRow | null>(null);
 
 watch(renameDialogOpen, (isOpen) => {
-    if (! isOpen) {
+    if (!isOpen) {
         roleToRename.value = null;
     }
 });
 
 watch(deleteOpen, (isOpen) => {
-    if (! isOpen) {
+    if (!isOpen) {
         roleToDelete.value = null;
     }
 });
@@ -84,7 +101,7 @@ function openDeleteConfirm(role: RoleRow): void {
 function confirmDeleteRole(): void {
     const role = roleToDelete.value;
 
-    if (! role) {
+    if (!role) {
         return;
     }
 
@@ -101,6 +118,52 @@ defineOptions({
         ],
     },
 });
+
+const tableColumns: DataTableColumn[] = [
+    { key: 'name', label: 'Nome', sortable: true },
+    { key: 'permissions_count', label: 'Permissões', sortable: true },
+    { key: 'users_count', label: 'Usuários', sortable: true },
+    {
+        key: 'actions',
+        label: 'Ações',
+        sortable: false,
+        align: 'right',
+        headerClass: 'text-right',
+    },
+];
+
+const filterFields: TableFilterField[] = [
+    {
+        key: 'search',
+        label: 'Busca',
+        type: 'text',
+        placeholder: 'Nome do perfil',
+    },
+    {
+        key: 'system',
+        label: 'Tipo',
+        type: 'select',
+        options: [
+            { value: 'all', label: 'Todos' },
+            { value: 'yes', label: 'Somente sistema' },
+            { value: 'no', label: 'Somente personalizados' },
+        ],
+    },
+    {
+        key: 'has_users',
+        label: 'Usuários vinculados',
+        type: 'select',
+        options: [
+            { value: 'all', label: 'Todos' },
+            { value: 'yes', label: 'Com usuários' },
+            { value: 'no', label: 'Sem usuários' },
+        ],
+    },
+];
+
+function rowAsRole(row: Record<string, unknown>): RoleRow {
+    return row as unknown as RoleRow;
+}
 </script>
 
 <template>
@@ -131,7 +194,10 @@ defineOptions({
 
             <Dialog v-if="canCreate" v-model:open="createDialogOpen">
                 <DialogTrigger as-child>
-                    <Button type="button" class="w-full shrink-0 sm:mt-1 sm:w-auto">
+                    <Button
+                        type="button"
+                        class="w-full shrink-0 sm:mt-1 sm:w-auto"
+                    >
                         <Plus class="size-4" />
                         Novo perfil
                     </Button>
@@ -224,107 +290,99 @@ defineOptions({
             </DialogContent>
         </Dialog>
 
-        <div
-            v-if="roles.length === 0"
-            class="rounded-xl border border-dashed border-sidebar-border/70 p-8 text-center text-sm text-muted-foreground dark:border-sidebar-border"
-        >
-            Nenhum perfil cadastrado. Crie um perfil para começar.
-        </div>
+        <TableFilters
+            :index-url="rolesIndex.url()"
+            :fields="filterFields"
+            :filters="filters"
+            :preserve="{
+                sort: sort.column,
+                direction: sort.direction,
+            }"
+        />
 
-        <div
-            v-else
-            class="overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border"
+        <DataTable
+            :columns="tableColumns"
+            :paginator="roles"
+            :sort-column="sort.column"
+            :sort-direction="sort.direction"
+            :index-url="rolesIndex.url()"
+            empty-message="Nenhum perfil encontrado."
         >
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm">
-                    <thead
-                        class="border-b border-sidebar-border/70 bg-muted/40 dark:border-sidebar-border"
-                    >
-                        <tr>
-                            <th class="px-4 py-3 font-medium">Nome</th>
-                            <th class="px-4 py-3 font-medium">Permissões</th>
-                            <th class="px-4 py-3 font-medium">Usuários</th>
-                            <th class="px-4 py-3 text-right font-medium">
-                                Ações
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr
-                            v-for="role in roles"
-                            :key="role.id"
-                            class="border-b border-sidebar-border/50 last:border-0 dark:border-sidebar-border/50"
-                        >
-                            <td class="px-4 py-3">
-                                <div class="flex flex-col gap-0.5">
-                                    <span class="font-medium">
-                                        {{ roleLabel(role.name) }}
-                                    </span>
-                                    <span
-                                        v-if="role.is_system"
-                                        class="text-xs text-muted-foreground"
-                                    >
-                                        Perfil de sistema
-                                    </span>
-                                    <span
-                                        v-else-if="
-                                            roleLabel(role.name) !== role.name
-                                        "
-                                        class="text-xs text-muted-foreground"
-                                    >
-                                        {{ role.name }}
-                                    </span>
-                                </div>
-                            </td>
-                            <td class="px-4 py-3 tabular-nums">
-                                {{ role.permissions_count }}
-                            </td>
-                            <td class="px-4 py-3 tabular-nums">
-                                {{ role.users_count }}
-                            </td>
-                            <td class="px-4 py-3 text-right">
-                                <div class="flex justify-end gap-2">
-                                    <Button
-                                        v-if="canViewPermissions"
-                                        variant="outline"
-                                        size="icon-sm"
-                                        as-child
-                                    >
-                                        <Link
-                                            :href="
-                                                rolePermissionsEdit(role.id)
-                                            "
-                                            :aria-label="`Permissões de ${roleLabel(role.name)}`"
-                                        >
-                                            <Shield class="size-4" />
-                                        </Link>
-                                    </Button>
-                                    <Button
-                                        v-if="canUpdate && role.can_rename"
-                                        type="button"
-                                        variant="outline"
-                                        size="icon-sm"
-                                        :aria-label="`Renomear ${roleLabel(role.name)}`"
-                                        @click="openRenameDialog(role)"
-                                    >
-                                        <Pencil class="size-4" />
-                                    </Button>
-                                    <Button
-                                        v-if="canUpdate && role.can_delete"
-                                        type="button"
-                                        variant="destructive"
-                                        size="icon-sm"
-                                        :aria-label="`Excluir ${roleLabel(role.name)}`"
-                                        @click="openDeleteConfirm(role)"
-                                    >
-                                        <Trash2 class="size-4" />
-                                    </Button>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+            <template #default="{ rows }">
+                <tr
+                    v-for="row in rows"
+                    :key="rowAsRole(row).id"
+                    class="border-b border-sidebar-border/50 last:border-0 dark:border-sidebar-border/50"
+                >
+                    <td class="px-4 py-3">
+                        <div class="flex flex-col gap-0.5">
+                            <span class="font-medium">
+                                {{ roleLabel(rowAsRole(row).name) }}
+                            </span>
+                            <span
+                                v-if="rowAsRole(row).is_system"
+                                class="text-xs text-muted-foreground"
+                            >
+                                Perfil de sistema
+                            </span>
+                            <span
+                                v-else-if="
+                                    roleLabel(rowAsRole(row).name) !==
+                                    rowAsRole(row).name
+                                "
+                                class="text-xs text-muted-foreground"
+                            >
+                                {{ rowAsRole(row).name }}
+                            </span>
+                        </div>
+                    </td>
+                    <td class="px-4 py-3 tabular-nums">
+                        {{ rowAsRole(row).permissions_count }}
+                    </td>
+                    <td class="px-4 py-3 tabular-nums">
+                        {{ rowAsRole(row).users_count }}
+                    </td>
+                    <td class="px-4 py-3 text-right">
+                        <div class="flex justify-end gap-2">
+                            <Button
+                                v-if="canViewPermissions"
+                                variant="outline"
+                                size="icon-sm"
+                                as-child
+                            >
+                                <Link
+                                    :href="
+                                        rolePermissionsEdit(rowAsRole(row).id)
+                                    "
+                                    :aria-label="`Permissões de ${roleLabel(rowAsRole(row).name)}`"
+                                >
+                                    <Shield class="size-4" />
+                                </Link>
+                            </Button>
+                            <Button
+                                v-if="canUpdate && rowAsRole(row).can_rename"
+                                type="button"
+                                variant="outline"
+                                size="icon-sm"
+                                :aria-label="`Renomear ${roleLabel(rowAsRole(row).name)}`"
+                                @click="openRenameDialog(rowAsRole(row))"
+                            >
+                                <Pencil class="size-4" />
+                            </Button>
+                            <Button
+                                v-if="canUpdate && rowAsRole(row).can_delete"
+                                type="button"
+                                variant="destructive"
+                                size="icon-sm"
+                                :aria-label="`Excluir ${roleLabel(rowAsRole(row).name)}`"
+                                @click="openDeleteConfirm(rowAsRole(row))"
+                            >
+                                <Trash2 class="size-4" />
+                            </Button>
+                        </div>
+                    </td>
+                </tr>
+            </template>
+        </DataTable>
     </div>
 </template>

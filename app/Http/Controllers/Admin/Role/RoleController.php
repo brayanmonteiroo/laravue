@@ -7,17 +7,19 @@ namespace App\Http\Controllers\Admin\Role;
 use App\Enums\Permission;
 use App\Enums\Role as RoleEnum;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\Role\IndexRoleRequest;
 use App\Http\Requests\Admin\Role\StoreRoleRequest;
 use App\Http\Requests\Admin\Role\UpdateRoleRequest;
 use App\Services\Audit\AuditRecorder;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\Permission\Models\Role;
 
 class RoleController extends Controller
 {
+    private const int PER_PAGE = 10;
+
     /**
      * Nomes dos perfis de sistema.
      *
@@ -41,18 +43,29 @@ class RoleController extends Controller
     /**
      * Lista os perfis (roles) do guard web.
      */
-    public function index(Request $request): Response
+    public function index(IndexRoleRequest $request): Response
     {
-        $this->authorize('viewAny', Role::class);
-
+        $filters = $request->filters();
+        $sort = $filters['sort'];
+        $direction = $filters['direction'];
         $canUpdate = $request->user()?->can(Permission::PermissionsUpdate) ?? false;
+        $systemNames = self::systemRoleNames();
 
         $roles = Role::query()
             ->where('guard_name', 'web')
             ->withCount(['permissions', 'users'])
-            ->orderBy('name')
-            ->get()
-            ->map(function (Role $role) use ($canUpdate): array {
+            ->when($filters['search'] !== '', function ($query) use ($filters): void {
+                $query->where('name', 'like', '%'.$filters['search'].'%');
+            })
+            ->when($filters['system'] === 'yes', fn ($query) => $query->whereIn('name', $systemNames))
+            ->when($filters['system'] === 'no', fn ($query) => $query->whereNotIn('name', $systemNames))
+            ->when($filters['has_users'] === 'yes', fn ($query) => $query->has('users'))
+            ->when($filters['has_users'] === 'no', fn ($query) => $query->doesntHave('users'))
+            ->orderBy($sort, $direction)
+            ->orderBy('id')
+            ->paginate(self::PER_PAGE)
+            ->withQueryString()
+            ->through(function (Role $role) use ($canUpdate): array {
                 $isSystem = self::isSystemRole($role);
                 $usersCount = (int) $role->users_count;
                 $permissionsCount = (int) $role->permissions_count;
@@ -70,6 +83,15 @@ class RoleController extends Controller
 
         return Inertia::render('admin/roles/Index', [
             'roles' => $roles,
+            'sort' => [
+                'column' => $sort,
+                'direction' => $direction,
+            ],
+            'filters' => [
+                'search' => $filters['search'],
+                'system' => $filters['system'],
+                'has_users' => $filters['has_users'],
+            ],
         ]);
     }
 

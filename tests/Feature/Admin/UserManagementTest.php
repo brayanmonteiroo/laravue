@@ -95,6 +95,57 @@ test('listagem de usuários ordena por e-mail quando solicitado', function () {
             ->where('users.data.2.email', 'zz_admin@sort.test'));
 });
 
+test('administrador pode filtrar usuários por busca e verificação', function () {
+    $admin = User::factory()->administrator()->create([
+        'name' => 'Admin Filter',
+        'email' => 'admin.filter@example.com',
+    ]);
+    User::factory()->create([
+        'name' => 'Maria Busca',
+        'email' => 'maria.busca@example.com',
+        'email_verified_at' => now(),
+    ]);
+    User::factory()->unverified()->create([
+        'name' => 'Joao Pendente',
+        'email' => 'joao.pendente@example.com',
+    ]);
+
+    $this->actingAs($admin)
+        ->get(route('admin.users.index', ['search' => 'Maria']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('filters.search', 'Maria')
+            ->has('users.data', 1)
+            ->where('users.data.0.email', 'maria.busca@example.com')
+        );
+
+    $this->actingAs($admin)
+        ->get(route('admin.users.index', [
+            'search' => 'Maria',
+            'sort' => 'email',
+            'direction' => 'asc',
+        ]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('filters.search', 'Maria')
+            ->where('sort.column', 'email')
+            ->where('sort.direction', 'asc')
+            ->has('users.data', 1)
+        );
+
+    $this->actingAs($admin)
+        ->get(route('admin.users.index', ['verified' => 'no']))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('filters.verified', 'no')
+            ->where('users.data', function ($rows): bool {
+                return collect($rows)->every(
+                    fn (array $row): bool => $row['email_verified_at'] === null,
+                );
+            })
+        );
+});
+
 test('usuários com users.create podem criar usuário', function () {
     $admin = User::factory()->administrator()->create();
     Role::create(['name' => 'Editor', 'guard_name' => 'web']);

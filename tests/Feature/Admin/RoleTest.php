@@ -27,11 +27,13 @@ test('administrador pode listar perfis', function () {
         ->assertOk()
         ->assertInertia(fn ($page) => $page
             ->component('admin/roles/Index')
-            ->has('roles')
-            ->where('roles.0.name', AppRole::Administrator->value)
-            ->where('roles.0.is_system', true)
-            ->where('roles.0.can_rename', false)
-            ->where('roles.0.can_delete', false)
+            ->has('roles.data')
+            ->where('roles.data.0.name', AppRole::Administrator->value)
+            ->where('roles.data.0.is_system', true)
+            ->where('roles.data.0.can_rename', false)
+            ->where('roles.data.0.can_delete', false)
+            ->has('filters')
+            ->has('sort')
         );
 });
 
@@ -144,7 +146,7 @@ test('perfil customizado sem usuários pode ser excluído', function () {
         ->assertOk()
         ->assertInertia(fn ($page) => $page
             ->where(
-                'roles',
+                'roles.data',
                 fn ($roles) => collect($roles)->contains(
                     fn ($role) => $role['name'] === 'Deletable'
                         && $role['can_delete'] === true
@@ -166,6 +168,45 @@ test('não é possível excluir perfil com usuários vinculados', function () {
         ->assertSessionHas('flash.type', 'error');
 
     expect(Role::query()->where('name', 'BusyRole')->exists())->toBeTrue();
+});
+
+test('lista de perfis pagina e filtra por busca e tipo', function () {
+    $admin = User::factory()->administrator()->create();
+
+    foreach (range(1, 11) as $i) {
+        Role::create(['name' => "ExtraRole{$i}", 'guard_name' => 'web']);
+    }
+
+    $this->actingAs($admin)
+        ->get(route('admin.roles.index', ['page' => 1]))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->where('roles.current_page', 1)
+            ->where('roles.per_page', 10)
+            ->has('roles.data', 10)
+        );
+
+    $this->actingAs($admin)
+        ->get(route('admin.roles.index', [
+            'search' => 'ExtraRole7',
+            'system' => 'no',
+        ]))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->where('filters.search', 'ExtraRole7')
+            ->where('filters.system', 'no')
+            ->has('roles.data', 1)
+            ->where('roles.data.0.name', 'ExtraRole7')
+        );
+
+    $this->actingAs($admin)
+        ->get(route('admin.roles.index', ['system' => 'yes']))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->where('filters.system', 'yes')
+            ->where('roles.data.0.name', AppRole::Administrator->value)
+            ->where('roles.data.0.is_system', true)
+        );
 });
 
 test('usuários com apenas permissions.sidebar não acessam a lista de perfis', function () {

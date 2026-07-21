@@ -17,11 +17,31 @@ type Props = {
     sortDirection: 'asc' | 'desc';
     /** URL relativa ou absoluta da listagem (ex.: resultado de index.url()) */
     indexUrl: string;
+    emptyMessage?: string;
 };
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+    emptyMessage: 'Nenhum registro encontrado.',
+});
 
 const rows = computed(() => props.paginator.data);
+
+function preservedQuery(): Record<string, string> {
+    const params = new URLSearchParams(window.location.search);
+    const query: Record<string, string> = {};
+
+    params.forEach((value, key) => {
+        if (key === 'page' || key === 'sort' || key === 'direction') {
+            return;
+        }
+
+        if (value !== '') {
+            query[key] = value;
+        }
+    });
+
+    return query;
+}
 
 function visitPage(url: string | null): void {
     if (url) {
@@ -41,6 +61,7 @@ function requestSort(column: string): void {
     router.get(
         props.indexUrl,
         {
+            ...preservedQuery(),
             sort: column,
             direction: nextDirection(column),
         },
@@ -107,7 +128,7 @@ function sortIcon(column: string) {
                                 :colspan="columns.length"
                                 class="px-4 py-8 text-center text-sm text-muted-foreground"
                             >
-                                Nenhum registro encontrado.
+                                {{ emptyMessage }}
                             </td>
                         </tr>
                     </tbody>

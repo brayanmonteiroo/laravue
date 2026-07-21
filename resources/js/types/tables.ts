@@ -21,3 +21,16 @@ export type LaravelPaginator<T = Record<string, unknown>> = {
     per_page: number;
     total: number;
 };
+
+export type TableFilterOption = {
+    value: string;
+    label: string;
+};
+
+export type TableFilterField = {
+    key: string;
+    label: string;
+    type: 'text' | 'select' | 'date';
+    options?: TableFilterOption[];
+    placeholder?: string;
+};

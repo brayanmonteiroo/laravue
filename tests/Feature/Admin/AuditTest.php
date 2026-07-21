@@ -52,6 +52,8 @@ test('administrador visualiza as últimas auditorias traduzidas', function () {
             ->where('audits.data.0.action', fn ($value) => is_string($value))
             ->where('audits.data.0.subject', fn ($value) => is_string($value))
             ->where('audits.data.0.details', fn ($value) => is_string($value))
+            ->has('filters')
+            ->has('filterOptions.events')
         );
 });
 
@@ -101,6 +103,54 @@ test('listagem de auditoria pagina de dez em dez', function () {
             ->where('audits.per_page', 10)
             ->where('audits.total', $total)
             ->has('audits.data', $secondPageCount)
+        );
+});
+
+test('administrador pode filtrar auditorias por evento', function () {
+    $admin = User::factory()->administrator()->create();
+    $actor = User::factory()->create(['name' => 'Ator Filtro']);
+
+    Audit::query()->create([
+        'user_type' => User::class,
+        'user_id' => $actor->id,
+        'event' => 'created',
+        'auditable_type' => User::class,
+        'auditable_id' => $actor->id,
+        'old_values' => [],
+        'new_values' => ['name' => 'Novo'],
+        'url' => 'http://localhost/admin/users',
+        'ip_address' => '127.0.0.1',
+        'user_agent' => 'Pest',
+        'tags' => '',
+    ]);
+
+    Audit::query()->create([
+        'user_type' => User::class,
+        'user_id' => $actor->id,
+        'event' => 'deleted',
+        'auditable_type' => User::class,
+        'auditable_id' => $actor->id,
+        'old_values' => ['name' => 'Antigo'],
+        'new_values' => [],
+        'url' => 'http://localhost/admin/users',
+        'ip_address' => '127.0.0.1',
+        'user_agent' => 'Pest',
+        'tags' => '',
+    ]);
+
+    $this->actingAs($admin)
+        ->get(route('admin.audits.index', [
+            'event' => 'deleted',
+            'search' => 'Ator',
+        ]))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('filters.event', 'deleted')
+            ->where('filters.search', 'Ator')
+            ->where('audits.data', function ($rows): bool {
+                return collect($rows)->isNotEmpty()
+                    && collect($rows)->every(fn (array $row): bool => $row['action'] === 'Remoção');
+            })
         );
 });
 
